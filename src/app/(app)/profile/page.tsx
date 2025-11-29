@@ -25,10 +25,6 @@ import {
   Loader2,
   LogOut,
   Settings,
-  Swords,
-  Trophy,
-  Target,
-  TrendingUp,
   Edit,
   Check,
   Ghost,
@@ -63,14 +59,15 @@ export default function ProfilePage() {
       return
     }
 
+    // Only load essential fields: name, username, avatar, ELO, category
     const { data: profileData } = await supabase
       .from('profiles')
-      .select('*')
+      .select('id, full_name, username, avatar_url, elo_score, category_label')
       .eq('id', user.id)
       .single()
 
     if (profileData) {
-      setProfile(profileData)
+      setProfile(profileData as Profile)
       setFormData({
         fullName: profileData.full_name || '',
         username: profileData.username || '',
@@ -80,12 +77,12 @@ export default function ProfilePage() {
     // Get ghost players created by this user
     const { data: ghosts } = await supabase
       .from('players')
-      .select('*')
+      .select('id, display_name, elo_score, category_label, matches_played')
       .eq('created_by_user_id', user.id)
       .eq('is_ghost', true)
       .order('display_name')
 
-    setGhostPlayers(ghosts || [])
+    setGhostPlayers((ghosts || []) as Player[])
     setLoading(false)
   }
 
@@ -138,12 +135,6 @@ export default function ProfilePage() {
     router.refresh()
   }
 
-  // Header always shows immediately
-
-  const winRate = profile?.matches_played
-    ? Math.round((profile.matches_won / profile.matches_played) * 100)
-    : 0
-
   return (
     <>
       <Header
@@ -173,17 +164,6 @@ export default function ProfilePage() {
                 </div>
               </CardContent>
             </Card>
-            <div className="grid grid-cols-3 gap-3">
-              {[1, 2, 3].map((i) => (
-                <Card key={i}>
-                  <CardContent className="flex flex-col items-center p-4">
-                    <div className="mb-2 h-5 w-5 bg-muted rounded animate-pulse" />
-                    <div className="mb-1 h-8 w-12 bg-muted rounded animate-pulse" />
-                    <div className="h-3 w-16 bg-muted rounded animate-pulse" />
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
           </>
         ) : (
           <>
@@ -273,33 +253,6 @@ export default function ProfilePage() {
             </div>
           </CardContent>
         </Card>
-
-        {/* Stats */}
-        {!editMode && (
-          <div className="grid grid-cols-3 gap-3">
-            <Card>
-              <CardContent className="flex flex-col items-center p-4">
-                <Swords className="mb-2 h-5 w-5 text-primary" />
-                <p className="text-2xl font-bold">{profile?.matches_played || 0}</p>
-                <p className="text-xs text-muted-foreground">Partidos</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="flex flex-col items-center p-4">
-                <Trophy className="mb-2 h-5 w-5 text-green-500" />
-                <p className="text-2xl font-bold">{profile?.matches_won || 0}</p>
-                <p className="text-xs text-muted-foreground">Victorias</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="flex flex-col items-center p-4">
-                <Target className="mb-2 h-5 w-5 text-blue-500" />
-                <p className="text-2xl font-bold">{winRate}%</p>
-                <p className="text-xs text-muted-foreground">Win Rate</p>
-              </CardContent>
-            </Card>
-          </div>
-        )}
 
         {/* Ghost Players */}
         {ghostPlayers.length > 0 && (

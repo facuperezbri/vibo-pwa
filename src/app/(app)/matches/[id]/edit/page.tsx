@@ -76,6 +76,26 @@ export default function EditMatchPage({ params }: EditMatchPageProps) {
   const router = useRouter();
   const supabase = createClient();
 
+  // Helper function to round time to nearest 00 or 30 minutes
+  const roundTimeToNearestHalfHour = (timeString: string): string => {
+    const [hours, minutes] = timeString.split(":").map(Number);
+    let roundedMinutes: number;
+    let roundedHours = hours;
+
+    if (minutes <= 14) {
+      roundedMinutes = 0;
+    } else if (minutes <= 44) {
+      roundedMinutes = 30;
+    } else {
+      roundedMinutes = 0;
+      roundedHours = (hours + 1) % 24;
+    }
+
+    return `${String(roundedHours).padStart(2, "0")}:${String(
+      roundedMinutes
+    ).padStart(2, "0")}`;
+  };
+
   useEffect(() => {
     loadMatch();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -137,7 +157,8 @@ export default function EditMatchPage({ params }: EditMatchPageProps) {
     // Parse date and time from match_date (could be DATE or TIMESTAMPTZ)
     const matchDateTime = new Date(fullMatch.match_date);
     setMatchDate(matchDateTime.toISOString().split("T")[0]);
-    setMatchTime(matchDateTime.toTimeString().slice(0, 5)); // HH:mm format
+    const timeString = matchDateTime.toTimeString().slice(0, 5);
+    setMatchTime(roundTimeToNearestHalfHour(timeString)); // HH:mm format rounded to 00 or 30
 
     setSets(fullMatch.score_sets);
     setWinnerTeam(fullMatch.winner_team);
@@ -436,13 +457,14 @@ export default function EditMatchPage({ params }: EditMatchPageProps) {
             <CardTitle className="text-base">Detalles del Partido</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label>Fecha</Label>
                 <Input
                   type="date"
                   value={matchDate}
                   onChange={(e) => setMatchDate(e.target.value)}
+                  className="w-full"
                 />
               </div>
               <div className="space-y-2">
@@ -450,7 +472,14 @@ export default function EditMatchPage({ params }: EditMatchPageProps) {
                 <Input
                   type="time"
                   value={matchTime}
-                  onChange={(e) => setMatchTime(e.target.value)}
+                  onChange={(e) => {
+                    const roundedTime = roundTimeToNearestHalfHour(
+                      e.target.value
+                    );
+                    setMatchTime(roundedTime);
+                  }}
+                  step="1800"
+                  className="w-full"
                 />
               </div>
             </div>

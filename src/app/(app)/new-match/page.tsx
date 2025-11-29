@@ -801,7 +801,7 @@ export default function NewMatchPage() {
               </div>
             </CardHeader>
             <CardContent className="space-y-3">
-              {/* Current User (fixed) */}
+              {/* Current User (fixed) - Always Team 1 Player 1 */}
               {currentUser && (
                 <div className="flex items-center gap-3 rounded-lg bg-muted/50 p-3">
                   <PlayerAvatar
@@ -811,7 +811,9 @@ export default function NewMatchPage() {
                   />
                   <div className="flex-1">
                     <p className="font-medium">{currentUser.display_name}</p>
-                    <p className="text-xs text-muted-foreground">Vos</p>
+                    <p className="text-xs text-muted-foreground">
+                      Equipo 1 - Jugador 1
+                    </p>
                   </div>
                   <EloBadge
                     elo={currentUser.elo_score}
@@ -832,6 +834,7 @@ export default function NewMatchPage() {
                   setGhostPosition(pos);
                   setShowGhostDialog(true);
                 }}
+                label="Equipo 1 - Jugador 2"
               />
             </CardContent>
           </Card>
@@ -864,6 +867,7 @@ export default function NewMatchPage() {
                   setGhostPosition(pos);
                   setShowGhostDialog(true);
                 }}
+                label="Equipo 2 - Jugador 1"
               />
               <PlayerSlot
                 player={team2Player2}
@@ -875,6 +879,7 @@ export default function NewMatchPage() {
                   setGhostPosition(pos);
                   setShowGhostDialog(true);
                 }}
+                label="Equipo 2 - Jugador 2"
               />
             </CardContent>
           </Card>
@@ -1122,6 +1127,7 @@ interface PlayerSlotProps {
   ) => void;
   onRemove: (position: "team1-2" | "team2-1" | "team2-2") => void;
   onCreateGhost: (position: "team1-2" | "team2-1" | "team2-2") => void;
+  label?: string;
 }
 
 function PlayerSlot({
@@ -1131,6 +1137,7 @@ function PlayerSlot({
   onSelect,
   onRemove,
   onCreateGhost,
+  label,
 }: PlayerSlotProps) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
@@ -1150,9 +1157,9 @@ function PlayerSlot({
         />
         <div className="flex-1">
           <p className="font-medium">{player.display_name}</p>
-          {player.is_ghost && (
-            <p className="text-xs text-muted-foreground">Invitado</p>
-          )}
+          <p className="text-xs text-muted-foreground">
+            {label || (player.is_ghost ? "Invitado" : "")}
+          </p>
         </div>
         <EloBadge
           elo={player.elo_score}

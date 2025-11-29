@@ -180,6 +180,10 @@ async function MatchesListContent() {
                               {new Date(match.match_date).toLocaleDateString('es-AR', {
                                 day: 'numeric',
                                 month: 'short',
+                              })}{' '}
+                              {new Date(match.match_date).toLocaleTimeString('es-AR', {
+                                hour: '2-digit',
+                                minute: '2-digit',
                               })}
                             </span>
                             {match.venue && (

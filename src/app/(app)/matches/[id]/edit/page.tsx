@@ -50,6 +50,7 @@ export default function EditMatchPage({ params }: EditMatchPageProps) {
   // Editable fields
   const [venue, setVenue] = useState('')
   const [matchDate, setMatchDate] = useState('')
+  const [matchTime, setMatchTime] = useState('')
   const [sets, setSets] = useState<SetScore[]>([])
   const [winnerTeam, setWinnerTeam] = useState<1 | 2 | null>(null)
   const [matchConfig, setMatchConfig] = useState<MatchConfig>(DEFAULT_MATCH_CONFIG)
@@ -110,7 +111,12 @@ export default function EditMatchPage({ params }: EditMatchPageProps) {
 
     setMatch(fullMatch)
     setVenue(fullMatch.venue || '')
-    setMatchDate(fullMatch.match_date)
+    
+    // Parse date and time from match_date (could be DATE or TIMESTAMPTZ)
+    const matchDateTime = new Date(fullMatch.match_date)
+    setMatchDate(matchDateTime.toISOString().split('T')[0])
+    setMatchTime(matchDateTime.toTimeString().slice(0, 5)) // HH:mm format
+    
     setSets(fullMatch.score_sets)
     setWinnerTeam(fullMatch.winner_team)
     setMatchConfig(fullMatch.match_config)
@@ -181,7 +187,7 @@ export default function EditMatchPage({ params }: EditMatchPageProps) {
         .from('matches')
         .update({
           venue: venue || null,
-          match_date: matchDate,
+          match_date: `${matchDate}T${matchTime}:00`,
           score_sets: sets,
           winner_team: winnerTeam,
           match_config: matchConfig,
@@ -308,13 +314,21 @@ export default function EditMatchPage({ params }: EditMatchPageProps) {
                 />
               </div>
               <div className="space-y-2">
-                <Label>Cancha (opcional)</Label>
+                <Label>Hora</Label>
                 <Input
-                  placeholder="Ej: Club Padel Norte"
-                  value={venue}
-                  onChange={(e) => setVenue(e.target.value)}
+                  type="time"
+                  value={matchTime}
+                  onChange={(e) => setMatchTime(e.target.value)}
                 />
               </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Cancha (opcional)</Label>
+              <Input
+                placeholder="Ej: Club Padel Norte"
+                value={venue}
+                onChange={(e) => setVenue(e.target.value)}
+              />
             </div>
 
             {/* Match Configuration */}

@@ -209,10 +209,15 @@ export default function InvitePage({ params }: InvitePageProps) {
     )
   }
 
-  const dateStr = new Date(invitation.match_date).toLocaleDateString('es-AR', {
+  const matchDateTime = new Date(invitation.match_date)
+  const dateStr = matchDateTime.toLocaleDateString('es-AR', {
     weekday: 'long',
     day: 'numeric',
     month: 'long',
+  })
+  const timeStr = matchDateTime.toLocaleTimeString('es-AR', {
+    hour: '2-digit',
+    minute: '2-digit',
   })
 
   return (
@@ -237,7 +242,7 @@ export default function InvitePage({ params }: InvitePageProps) {
           <div className="space-y-3 rounded-lg bg-muted/50 p-4">
             <div className="flex items-center gap-2 text-sm">
               <Calendar className="h-4 w-4 text-muted-foreground" />
-              <span className="capitalize">{dateStr}</span>
+              <span className="capitalize">{dateStr} a las {timeStr}</span>
             </div>
             {invitation.venue && (
               <div className="flex items-center gap-2 text-sm">

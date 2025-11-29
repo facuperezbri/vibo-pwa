@@ -60,6 +60,7 @@ export default function NewMatchPage() {
   // Match details
   const [venue, setVenue] = useState('')
   const [matchDate, setMatchDate] = useState(new Date().toISOString().split('T')[0])
+  const [matchTime, setMatchTime] = useState(new Date().toTimeString().slice(0, 5)) // HH:mm format
   const [sets, setSets] = useState<SetScore[]>([{ team1: 0, team2: 0 }, { team1: 0, team2: 0 }])
   const [winnerTeam, setWinnerTeam] = useState<1 | 2 | null>(null)
   
@@ -269,7 +270,7 @@ export default function NewMatchPage() {
       .from('matches')
       .insert({
         created_by: user.id,
-        match_date: matchDate,
+        match_date: `${matchDate}T${matchTime}:00`,
         venue: venue || null,
         player_1_id: currentUser.id,
         player_2_id: team1Player2.id,
@@ -382,13 +383,21 @@ export default function NewMatchPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label>Cancha (opcional)</Label>
+                <Label>Hora</Label>
                 <Input
-                  placeholder="Ej: Club Padel Norte"
-                  value={venue}
-                  onChange={(e) => setVenue(e.target.value)}
+                  type="time"
+                  value={matchTime}
+                  onChange={(e) => setMatchTime(e.target.value)}
                 />
               </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Cancha (opcional)</Label>
+              <Input
+                placeholder="Ej: Club Padel Norte"
+                value={venue}
+                onChange={(e) => setVenue(e.target.value)}
+              />
             </div>
 
             {/* Match Configuration */}
@@ -647,7 +656,7 @@ export default function NewMatchPage() {
           matchId={createdMatchId}
           players={[team1Player2, team2Player1, team2Player2].filter(Boolean) as SelectedPlayer[]}
           invitations={invitations}
-          matchDate={matchDate}
+          matchDate={`${matchDate}T${matchTime}:00`}
           venue={venue}
           onComplete={handleShareComplete}
         />

@@ -92,6 +92,11 @@ export default async function MatchDetailPage({ params }: MatchDetailProps) {
               day: 'numeric',
               month: 'long',
               year: 'numeric',
+            })}{' '}
+            a las{' '}
+            {new Date(match.match_date).toLocaleTimeString('es-AR', {
+              hour: '2-digit',
+              minute: '2-digit',
             })}
           </span>
           {match.venue && (

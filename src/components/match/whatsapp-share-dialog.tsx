@@ -53,17 +53,22 @@ export function WhatsAppShareDialog({
   }
 
   function generateWhatsAppMessage(player: SelectedPlayer): string {
-    const dateStr = new Date(matchDate).toLocaleDateString('es-AR', {
+    const matchDateTime = new Date(matchDate)
+    const dateStr = matchDateTime.toLocaleDateString('es-AR', {
       weekday: 'long',
       day: 'numeric',
       month: 'long',
+    })
+    const timeStr = matchDateTime.toLocaleTimeString('es-AR', {
+      hour: '2-digit',
+      minute: '2-digit',
     })
     
     const invitation = invitations.find(inv => inv.invited_player_id === player.id)
     const link = getInviteLink(player)
     
     let message = `¡Hola ${player.display_name}! 🏓\n\n`
-    message += `Te invito a confirmar el partido de padel del ${dateStr}`
+    message += `Te invito a confirmar el partido de padel del ${dateStr} a las ${timeStr}`
     if (venue) {
       message += ` en ${venue}`
     }
@@ -94,14 +99,19 @@ export function WhatsAppShareDialog({
 
   function handleShareAll() {
     // Generate a single message for all players
-    const dateStr = new Date(matchDate).toLocaleDateString('es-AR', {
+    const matchDateTime = new Date(matchDate)
+    const dateStr = matchDateTime.toLocaleDateString('es-AR', {
       weekday: 'long',
       day: 'numeric',
       month: 'long',
     })
+    const timeStr = matchDateTime.toLocaleTimeString('es-AR', {
+      hour: '2-digit',
+      minute: '2-digit',
+    })
     
     let message = `¡Partido de padel registrado! 🏓\n\n`
-    message += `📅 ${dateStr}`
+    message += `📅 ${dateStr} a las ${timeStr}`
     if (venue) {
       message += `\n📍 ${venue}`
     }

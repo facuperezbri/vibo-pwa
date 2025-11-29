@@ -1,7 +1,7 @@
 'use client'
 
 import { usePathname, useRouter } from 'next/navigation'
-import { startTransition, useState, useEffect } from 'react'
+import { startTransition, useState, useEffect, flushSync } from 'react'
 import { Home, History, Plus, Trophy, User } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -54,10 +54,13 @@ export function BottomNav() {
   const handleNavigation = (href: string) => {
     if (pathname === href) return
     
-    // Immediately update UI optimistically (like React Router)
-    setOptimisticPath(href)
+    // Force immediate synchronous UI update using flushSync (like React Router)
+    // This makes the visual change instant, before any server round-trip
+    flushSync(() => {
+      setOptimisticPath(href)
+    })
     
-    // Navigate in a transition (non-blocking) - routes are already prefetched
+    // Navigate asynchronously - UI already updated, so this happens in background
     startTransition(() => {
       router.push(href)
     })

@@ -1,5 +1,5 @@
 -- ============================================
--- PadelTracker - Fix OAuth User Creation Trigger
+-- Padelio - Fix OAuth User Creation Trigger
 -- ============================================
 -- This fixes the trigger to handle OAuth users properly
 -- ============================================

@@ -49,7 +49,7 @@ Podés usar herramientas como:
 Los SVG actuales son placeholders simples con:
 - Fondo verde (#22c55e) - color primario de la app
 - Icono de raqueta de padel
-- Texto "PT" o "PadelTracker"
+- Texto "P" o "Padelio"
 
 ### Para crear tus propios iconos:
 

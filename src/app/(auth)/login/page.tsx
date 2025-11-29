@@ -68,7 +68,7 @@ export default function LoginPage() {
         <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary">
           <Swords className="h-8 w-8 text-primary-foreground" />
         </div>
-        <h1 className="text-2xl font-bold">PadelTracker</h1>
+        <h1 className="text-2xl font-bold">Padelio</h1>
         <p className="text-sm text-muted-foreground">Tu ranking, tus partidos</p>
       </div>
 

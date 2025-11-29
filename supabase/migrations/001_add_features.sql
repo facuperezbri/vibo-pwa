@@ -1,5 +1,5 @@
 -- ============================================
--- PadelTracker - Feature Additions Migration
+-- Padelio - Feature Additions Migration
 -- ============================================
 -- Run this AFTER the initial schema.sql
 -- This migration is IDEMPOTENT - safe to run multiple times

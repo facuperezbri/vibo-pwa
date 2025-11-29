@@ -18,7 +18,7 @@ export default async function HomePage() {
 
   return (
     <>
-      <Header title="PadelTracker" />
+      <Header title="Padelio" />
       
       <div className="space-y-6 p-4">
         <ProfileSummary />

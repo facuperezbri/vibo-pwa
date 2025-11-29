@@ -129,7 +129,7 @@ export default function CompleteProfilePage() {
         <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary">
           <Swords className="h-7 w-7 text-primary-foreground" />
         </div>
-        <h1 className="text-xl font-bold">PadelTracker</h1>
+        <h1 className="text-xl font-bold">Padelio</h1>
       </div>
 
       <Card className="w-full max-w-sm border-0 bg-card/50 backdrop-blur">

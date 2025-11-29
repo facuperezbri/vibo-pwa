@@ -1,6 +1,6 @@
 {
-  "name": "PadelTracker",
-  "short_name": "PadelTracker",
+  "name": "Padelio",
+  "short_name": "Padelio",
   "description": "Track your padel matches, calculate ELO rankings, and compete with friends",
   "start_url": "/",
   "display": "standalone",

@@ -1,4 +1,4 @@
-# 🏓 PadelTracker
+# 🏓 Padelio
 
 A modern Progressive Web App (PWA) for tracking padel matches, calculating ELO rankings, and competing with friends.
 
@@ -78,8 +78,8 @@ A modern Progressive Web App (PWA) for tracking padel matches, calculating ELO r
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/padel-tracker.git
-cd padel-tracker
+git clone https://github.com/yourusername/padelio.git
+cd padelio
 ```
 
 2. Install dependencies:
@@ -111,7 +111,7 @@ npm run dev
 ## 📁 Project Structure
 
 ```
-padel-tracker/
+padelio/
 ├── src/
 │   ├── app/              # Next.js App Router pages
 │   │   ├── (app)/        # Protected app routes
@@ -183,7 +183,7 @@ Facundo Pérez Brizuela
 
 ---
 
-# 🏓 PadelTracker
+# 🏓 Padelio
 
 Una aplicación web progresiva (PWA) moderna para rastrear partidos de pádel, calcular rankings ELO y competir con amigos.
 
@@ -263,8 +263,8 @@ Una aplicación web progresiva (PWA) moderna para rastrear partidos de pádel, c
 
 1. Clona el repositorio:
 ```bash
-git clone https://github.com/yourusername/padel-tracker.git
-cd padel-tracker
+git clone https://github.com/yourusername/padelio.git
+cd padelio
 ```
 
 2. Instala las dependencias:
@@ -296,7 +296,7 @@ npm run dev
 ## 📁 Estructura del Proyecto
 
 ```
-padel-tracker/
+padelio/
 ├── src/
 │   ├── app/              # Páginas del App Router de Next.js
 │   │   ├── (app)/        # Rutas protegidas de la app

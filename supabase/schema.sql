@@ -1,5 +1,5 @@
 -- ============================================
--- PadelTracker - Database Schema
+-- Padelio - Database Schema
 -- ============================================
 -- Run this in Supabase SQL Editor
 -- ============================================

@@ -1,22 +1,10 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
-import { Header } from '@/components/layout/header'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog'
+import { Header } from "@/components/layout/header";
+import { WhatsAppShareDialog } from "@/components/match/whatsapp-share-dialog";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Command,
   CommandEmpty,
@@ -24,157 +12,239 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from '@/components/ui/command'
+} from "@/components/ui/command";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { EloBadge } from "@/components/ui/elo-badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { PlayerAvatar } from "@/components/ui/player-avatar";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
-import { Switch } from '@/components/ui/switch'
-import { PlayerAvatar } from '@/components/ui/player-avatar'
-import { EloBadge } from '@/components/ui/elo-badge'
-import { Loader2, Plus, X, UserPlus, Check, Trophy, Share2 } from 'lucide-react'
-import type { Player, PlayerCategory, SetScore, MatchConfig, MatchInvitation } from '@/types/database'
-import { CATEGORIES, CATEGORY_ELO_MAP, CATEGORY_LABELS, DEFAULT_MATCH_CONFIG } from '@/types/database'
-import { WhatsAppShareDialog } from '@/components/match/whatsapp-share-dialog'
+} from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import {
+  getSetWinner,
+  isValidSetScore,
+  validateMatch,
+} from "@/lib/padel-rules";
+import { createClient } from "@/lib/supabase/client";
+import type {
+  MatchConfig,
+  MatchInvitation,
+  Player,
+  PlayerCategory,
+  SetScore,
+} from "@/types/database";
+import {
+  CATEGORIES,
+  CATEGORY_ELO_MAP,
+  CATEGORY_LABELS,
+  DEFAULT_MATCH_CONFIG,
+} from "@/types/database";
+import {
+  Check,
+  Loader2,
+  Plus,
+  Share2,
+  Trophy,
+  UserPlus,
+  X,
+} from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
-type SelectedPlayer = Pick<Player, 'id' | 'display_name' | 'is_ghost' | 'elo_score' | 'category_label' | 'profile_id'>
+type SelectedPlayer = Pick<
+  Player,
+  | "id"
+  | "display_name"
+  | "is_ghost"
+  | "elo_score"
+  | "category_label"
+  | "profile_id"
+>;
 
 export default function NewMatchPage() {
-  const [loading, setLoading] = useState(false)
-  const [savingMatch, setSavingMatch] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [success, setSuccess] = useState(false)
-  
-  const [currentUser, setCurrentUser] = useState<SelectedPlayer | null>(null)
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
-  const [availablePlayers, setAvailablePlayers] = useState<SelectedPlayer[]>([])
-  
+  const [loading, setLoading] = useState(false);
+  const [savingMatch, setSavingMatch] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+
+  const [currentUser, setCurrentUser] = useState<SelectedPlayer | null>(null);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [availablePlayers, setAvailablePlayers] = useState<SelectedPlayer[]>(
+    []
+  );
+
   // Team selection (user is always position 1)
-  const [team1Player2, setTeam1Player2] = useState<SelectedPlayer | null>(null)
-  const [team2Player1, setTeam2Player1] = useState<SelectedPlayer | null>(null)
-  const [team2Player2, setTeam2Player2] = useState<SelectedPlayer | null>(null)
-  
+  const [team1Player2, setTeam1Player2] = useState<SelectedPlayer | null>(null);
+  const [team2Player1, setTeam2Player1] = useState<SelectedPlayer | null>(null);
+  const [team2Player2, setTeam2Player2] = useState<SelectedPlayer | null>(null);
+
   // Match details
-  const [venue, setVenue] = useState('')
-  const [matchDate, setMatchDate] = useState(new Date().toISOString().split('T')[0])
-  const [matchTime, setMatchTime] = useState(new Date().toTimeString().slice(0, 5)) // HH:mm format
-  const [sets, setSets] = useState<SetScore[]>([{ team1: 0, team2: 0 }, { team1: 0, team2: 0 }])
-  const [winnerTeam, setWinnerTeam] = useState<1 | 2 | null>(null)
-  
+  const [venue, setVenue] = useState("");
+  const [matchDate, setMatchDate] = useState(
+    new Date().toISOString().split("T")[0]
+  );
+  const [matchTime, setMatchTime] = useState(
+    new Date().toTimeString().slice(0, 5)
+  ); // HH:mm format
+  const [sets, setSets] = useState<SetScore[]>([
+    { team1: 0, team2: 0 },
+    { team1: 0, team2: 0 },
+  ]);
+  const [winnerTeam, setWinnerTeam] = useState<1 | 2 | null>(null);
+
+  // Input values as strings to avoid "06" issue
+  const [setInputValues, setSetInputValues] = useState<
+    Array<{ team1: string; team2: string }>
+  >([
+    { team1: "", team2: "" },
+    { team1: "", team2: "" },
+  ]);
+
+  // Validation errors
+  const [validationError, setValidationError] = useState<string | null>(null);
+  const [setErrors, setSetErrors] = useState<
+    Array<{ team1?: string; team2?: string }>
+  >([{}, {}]);
+
   // Match config (Golden Point / Super Tie-break)
-  const [matchConfig, setMatchConfig] = useState<MatchConfig>(DEFAULT_MATCH_CONFIG)
-  
+  const [matchConfig, setMatchConfig] =
+    useState<MatchConfig>(DEFAULT_MATCH_CONFIG);
+
   // Ghost player creation
-  const [showGhostDialog, setShowGhostDialog] = useState(false)
-  const [ghostPosition, setGhostPosition] = useState<'team1-2' | 'team2-1' | 'team2-2' | null>(null)
-  const [newGhostName, setNewGhostName] = useState('')
-  const [newGhostCategory, setNewGhostCategory] = useState<PlayerCategory>('6ta')
-  const [creatingGhost, setCreatingGhost] = useState(false)
+  const [showGhostDialog, setShowGhostDialog] = useState(false);
+  const [ghostPosition, setGhostPosition] = useState<
+    "team1-2" | "team2-1" | "team2-2" | null
+  >(null);
+  const [newGhostName, setNewGhostName] = useState("");
+  const [newGhostCategory, setNewGhostCategory] =
+    useState<PlayerCategory>("6ta");
+  const [creatingGhost, setCreatingGhost] = useState(false);
 
   // WhatsApp share
-  const [showShareDialog, setShowShareDialog] = useState(false)
-  const [createdMatchId, setCreatedMatchId] = useState<string | null>(null)
-  const [invitations, setInvitations] = useState<MatchInvitation[]>([])
+  const [showShareDialog, setShowShareDialog] = useState(false);
+  const [createdMatchId, setCreatedMatchId] = useState<string | null>(null);
+  const [invitations, setInvitations] = useState<MatchInvitation[]>([]);
 
-  const router = useRouter()
-  const supabase = createClient()
+  const router = useRouter();
+  const supabase = createClient();
 
   useEffect(() => {
-    loadUserAndPlayers()
+    loadUserAndPlayers();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, []);
 
   async function loadUserAndPlayers() {
-    setLoading(true)
-    
-    const { data: { user } } = await supabase.auth.getUser()
+    setLoading(true);
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) {
-      router.push('/login')
-      return
+      router.push("/login");
+      return;
     }
 
-    setCurrentUserId(user.id)
+    setCurrentUserId(user.id);
 
     // Get current user's player record
     const { data: userPlayer } = await supabase
-      .from('players')
-      .select('id, display_name, is_ghost, elo_score, category_label, profile_id')
-      .eq('profile_id', user.id)
-      .single()
+      .from("players")
+      .select(
+        "id, display_name, is_ghost, elo_score, category_label, profile_id"
+      )
+      .eq("profile_id", user.id)
+      .single();
 
     if (userPlayer) {
-      setCurrentUser(userPlayer)
+      setCurrentUser(userPlayer);
     }
 
     // Get available players (non-ghost public + user's ghosts)
     const { data: players } = await supabase
-      .from('players')
-      .select('id, display_name, is_ghost, elo_score, category_label, profile_id')
+      .from("players")
+      .select(
+        "id, display_name, is_ghost, elo_score, category_label, profile_id"
+      )
       .or(`is_ghost.eq.false,created_by_user_id.eq.${user.id}`)
-      .neq('profile_id', user.id) // Exclude current user
-      .order('display_name')
+      .neq("profile_id", user.id) // Exclude current user
+      .order("display_name");
 
-    setAvailablePlayers(players || [])
-    setLoading(false)
+    setAvailablePlayers(players || []);
+    setLoading(false);
   }
 
-  function handlePlayerSelect(player: SelectedPlayer, position: 'team1-2' | 'team2-1' | 'team2-2') {
+  function handlePlayerSelect(
+    player: SelectedPlayer,
+    position: "team1-2" | "team2-1" | "team2-2"
+  ) {
     switch (position) {
-      case 'team1-2':
-        setTeam1Player2(player)
-        break
-      case 'team2-1':
-        setTeam2Player1(player)
-        break
-      case 'team2-2':
-        setTeam2Player2(player)
-        break
+      case "team1-2":
+        setTeam1Player2(player);
+        break;
+      case "team2-1":
+        setTeam2Player1(player);
+        break;
+      case "team2-2":
+        setTeam2Player2(player);
+        break;
     }
   }
 
-  function handleRemovePlayer(position: 'team1-2' | 'team2-1' | 'team2-2') {
+  function handleRemovePlayer(position: "team1-2" | "team2-1" | "team2-2") {
     switch (position) {
-      case 'team1-2':
-        setTeam1Player2(null)
-        break
-      case 'team2-1':
-        setTeam2Player1(null)
-        break
-      case 'team2-2':
-        setTeam2Player2(null)
-        break
+      case "team1-2":
+        setTeam1Player2(null);
+        break;
+      case "team2-1":
+        setTeam2Player1(null);
+        break;
+      case "team2-2":
+        setTeam2Player2(null);
+        break;
     }
   }
 
   function getSelectedPlayerIds(): string[] {
-    const ids: string[] = []
-    if (currentUser) ids.push(currentUser.id)
-    if (team1Player2) ids.push(team1Player2.id)
-    if (team2Player1) ids.push(team2Player1.id)
-    if (team2Player2) ids.push(team2Player2.id)
-    return ids
+    const ids: string[] = [];
+    if (currentUser) ids.push(currentUser.id);
+    if (team1Player2) ids.push(team1Player2.id);
+    if (team2Player1) ids.push(team2Player1.id);
+    if (team2Player2) ids.push(team2Player2.id);
+    return ids;
   }
 
   function getAvailablePlayersForPosition(): SelectedPlayer[] {
-    const selectedIds = getSelectedPlayerIds()
-    return availablePlayers.filter(p => !selectedIds.includes(p.id))
+    const selectedIds = getSelectedPlayerIds();
+    return availablePlayers.filter((p) => !selectedIds.includes(p.id));
   }
 
   async function handleCreateGhost() {
-    if (!newGhostName.trim() || !ghostPosition) return
-    
-    setCreatingGhost(true)
-    
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return
+    if (!newGhostName.trim() || !ghostPosition) return;
 
-    const initialElo = CATEGORY_ELO_MAP[newGhostCategory]
+    setCreatingGhost(true);
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const initialElo = CATEGORY_ELO_MAP[newGhostCategory];
 
     const { data: newPlayer, error } = await supabase
-      .from('players')
+      .from("players")
       .insert({
         display_name: newGhostName.trim(),
         is_ghost: true,
@@ -182,86 +252,192 @@ export default function NewMatchPage() {
         elo_score: initialElo,
         category_label: newGhostCategory,
       })
-      .select('id, display_name, is_ghost, elo_score, category_label, profile_id')
-      .single()
+      .select(
+        "id, display_name, is_ghost, elo_score, category_label, profile_id"
+      )
+      .single();
 
     if (error || !newPlayer) {
-      setError('Error al crear el jugador')
-      setCreatingGhost(false)
-      return
+      setError("Error al crear el jugador");
+      setCreatingGhost(false);
+      return;
     }
 
     // Add to available players and select
-    setAvailablePlayers(prev => [...prev, newPlayer])
-    handlePlayerSelect(newPlayer, ghostPosition)
-    
+    setAvailablePlayers((prev) => [...prev, newPlayer]);
+    handlePlayerSelect(newPlayer, ghostPosition);
+
     // Reset dialog
-    setShowGhostDialog(false)
-    setNewGhostName('')
-    setNewGhostCategory('6ta')
-    setGhostPosition(null)
-    setCreatingGhost(false)
+    setShowGhostDialog(false);
+    setNewGhostName("");
+    setNewGhostCategory("6ta");
+    setGhostPosition(null);
+    setCreatingGhost(false);
   }
 
-  function handleSetScoreChange(setIndex: number, team: 'team1' | 'team2', value: string) {
-    const numValue = parseInt(value) || 0
-    const isSuperTiebreak = matchConfig.superTiebreak && setIndex === 2
-    const maxScore = isSuperTiebreak ? 10 : 7
-    
-    const newSets = [...sets]
-    newSets[setIndex] = { 
-      ...newSets[setIndex], 
-      [team]: Math.min(maxScore, Math.max(0, numValue)),
-      isTiebreak: isSuperTiebreak
+  function handleSetScoreChange(
+    setIndex: number,
+    team: "team1" | "team2",
+    value: string
+  ) {
+    // Allow empty string for clearing
+    if (value === "") {
+      const newInputValues = [...setInputValues];
+      newInputValues[setIndex] = { ...newInputValues[setIndex], [team]: "" };
+      setSetInputValues(newInputValues);
+
+      const newSets = [...sets];
+      newSets[setIndex] = {
+        ...newSets[setIndex],
+        [team]: 0,
+        isTiebreak: matchConfig.superTiebreak && setIndex === 2,
+      };
+      setSets(newSets);
+      validateSet(setIndex, team, 0);
+      return;
     }
-    setSets(newSets)
+
+    // Only allow digits
+    if (!/^\d+$/.test(value)) return;
+
+    const numValue = parseInt(value);
+    const isSuperTiebreak = matchConfig.superTiebreak && setIndex === 2;
+    const maxScore = isSuperTiebreak ? 10 : 7;
+
+    // Limit to max score
+    if (numValue > maxScore) return;
+
+    // Update input value (as string to avoid "06" issue)
+    const newInputValues = [...setInputValues];
+    newInputValues[setIndex] = { ...newInputValues[setIndex], [team]: value };
+    setSetInputValues(newInputValues);
+
+    // Update sets
+    const newSets = [...sets];
+    newSets[setIndex] = {
+      ...newSets[setIndex],
+      [team]: numValue,
+      isTiebreak: isSuperTiebreak,
+    };
+    setSets(newSets);
+
+    // Validate this set
+    validateSet(setIndex, team, numValue);
+  }
+
+  function handleSetScoreBlur(setIndex: number, team: "team1" | "team2") {
+    // When input loses focus, ensure we have a number (not empty string)
+    const currentValue = setInputValues[setIndex]?.[team];
+    if (currentValue === "" || currentValue === undefined) {
+      const newInputValues = [...setInputValues];
+      newInputValues[setIndex] = { ...newInputValues[setIndex], [team]: "0" };
+      setSetInputValues(newInputValues);
+    }
+  }
+
+  function validateSet(
+    setIndex: number,
+    team: "team1" | "team2",
+    value: number
+  ) {
+    const set = sets[setIndex];
+    const isSuperTiebreak = matchConfig.superTiebreak && setIndex === 2;
+    const otherTeam = team === "team1" ? "team2" : "team1";
+    const otherValue = set[otherTeam];
+
+    const newSetErrors = [...setErrors];
+    if (!newSetErrors[setIndex]) {
+      newSetErrors[setIndex] = {};
+    }
+
+    // Validate the set score
+    const isValid = isValidSetScore(
+      team === "team1" ? value : set.team1,
+      team === "team2" ? value : set.team2,
+      isSuperTiebreak
+    );
+
+    if (!isValid && value > 0 && otherValue > 0) {
+      const setLabel = isSuperTiebreak
+        ? "Super Tiebreak"
+        : `Set ${setIndex + 1}`;
+      newSetErrors[setIndex][team] = `Resultado inválido en ${setLabel}`;
+    } else {
+      delete newSetErrors[setIndex][team];
+    }
+
+    setSetErrors(newSetErrors);
   }
 
   function addSet() {
     if (sets.length < 3) {
-      setSets([...sets, { team1: 0, team2: 0, isTiebreak: matchConfig.superTiebreak }])
+      setSets([
+        ...sets,
+        { team1: 0, team2: 0, isTiebreak: matchConfig.superTiebreak },
+      ]);
+      setSetInputValues([...setInputValues, { team1: "", team2: "" }]);
+      setSetErrors([...setErrors, {}]);
     }
   }
 
   function removeSet() {
     if (sets.length > 2) {
-      setSets(sets.slice(0, -1))
+      setSets(sets.slice(0, -1));
+      setSetInputValues(setInputValues.slice(0, -1));
+      setSetErrors(setSetErrors.slice(0, -1));
     }
   }
 
   useEffect(() => {
-    let team1Sets = 0
-    let team2Sets = 0
-    
-    sets.forEach(set => {
-      if (set.team1 > set.team2) team1Sets++
-      else if (set.team2 > set.team1) team2Sets++
-    })
-    
-    const winner: 1 | 2 | null = team1Sets > team2Sets ? 1 : team2Sets > team1Sets ? 2 : null
-    setWinnerTeam(winner)
-  }, [sets])
+    let team1Sets = 0;
+    let team2Sets = 0;
+
+    sets.forEach((set, index) => {
+      const isSuperTiebreak = matchConfig.superTiebreak && index === 2;
+      const winner = getSetWinner(set.team1, set.team2, isSuperTiebreak);
+      if (winner === 1) team1Sets++;
+      if (winner === 2) team2Sets++;
+    });
+
+    const winner: 1 | 2 | null =
+      team1Sets > team2Sets ? 1 : team2Sets > team1Sets ? 2 : null;
+    setWinnerTeam(winner);
+  }, [sets, matchConfig.superTiebreak]);
 
   async function handleSubmit() {
     if (!currentUser || !team1Player2 || !team2Player1 || !team2Player2) {
-      setError('Seleccioná los 4 jugadores')
-      return
+      setError("Seleccioná los 4 jugadores");
+      return;
+    }
+
+    // Validate match using padel rules
+    const validation = validateMatch(sets, matchConfig);
+    if (!validation.valid) {
+      setError(
+        validation.error ||
+          "El resultado no es válido según las reglas del pádel"
+      );
+      setValidationError(validation.error || null);
+      return;
     }
 
     if (!winnerTeam) {
-      setError('El resultado debe tener un ganador claro')
-      return
+      setError("El resultado debe tener un ganador claro");
+      return;
     }
 
-    setSavingMatch(true)
-    setError(null)
+    setSavingMatch(true);
+    setError(null);
+    setValidationError(null);
 
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return;
 
     // Create the match
     const { data: match, error: matchError } = await supabase
-      .from('matches')
+      .from("matches")
       .insert({
         created_by: user.id,
         match_date: `${matchDate}T${matchTime}:00`,
@@ -274,60 +450,60 @@ export default function NewMatchPage() {
         winner_team: winnerTeam,
         match_config: matchConfig,
       })
-      .select('id')
-      .single()
+      .select("id")
+      .single();
 
     if (matchError || !match) {
-      setError('Error al guardar el partido: ' + matchError?.message)
-      setSavingMatch(false)
-      return
+      setError("Error al guardar el partido: " + matchError?.message);
+      setSavingMatch(false);
+      return;
     }
 
-    setCreatedMatchId(match.id)
+    setCreatedMatchId(match.id);
 
     // Create invitations for non-ghost players (excluding self)
     const playersToInvite = [team1Player2, team2Player1, team2Player2].filter(
-      p => !p.is_ghost && p.profile_id && p.profile_id !== user.id
-    )
+      (p) => !p.is_ghost && p.profile_id && p.profile_id !== user.id
+    );
 
     if (playersToInvite.length > 0) {
-      const invitationInserts = playersToInvite.map(p => ({
+      const invitationInserts = playersToInvite.map((p) => ({
         match_id: match.id,
         invited_player_id: p.id,
         invited_profile_id: p.profile_id,
-      }))
+      }));
 
       const { data: newInvitations } = await supabase
-        .from('match_invitations')
+        .from("match_invitations")
         .insert(invitationInserts)
-        .select('*')
+        .select("*");
 
       if (newInvitations) {
-        setInvitations(newInvitations)
+        setInvitations(newInvitations);
       }
     }
 
-    setSuccess(true)
-    setSavingMatch(false)
-    
+    setSuccess(true);
+    setSavingMatch(false);
+
     // Show share dialog if there are players to share with
-    const allPlayers = [team1Player2, team2Player1, team2Player2]
-    const hasPlayersToShare = allPlayers.some(p => !p.is_ghost || p.is_ghost)
-    
+    const allPlayers = [team1Player2, team2Player1, team2Player2];
+    const hasPlayersToShare = allPlayers.some((p) => !p.is_ghost || p.is_ghost);
+
     if (hasPlayersToShare) {
-      setShowShareDialog(true)
+      setShowShareDialog(true);
     } else {
       setTimeout(() => {
-        router.push('/matches')
-        router.refresh()
-      }, 1500)
+        router.push("/matches");
+        router.refresh();
+      }, 1500);
     }
   }
 
   function handleShareComplete() {
-    setShowShareDialog(false)
-    router.push('/matches')
-    router.refresh()
+    setShowShareDialog(false);
+    router.push("/matches");
+    router.refresh();
   }
 
   if (loading) {
@@ -338,13 +514,13 @@ export default function NewMatchPage() {
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
       </>
-    )
+    );
   }
 
   return (
     <>
       <Header title="Nuevo Partido" showBack />
-      
+
       <div className="space-y-6 p-4">
         {error && (
           <Alert variant="destructive">
@@ -396,8 +572,10 @@ export default function NewMatchPage() {
 
             {/* Match Configuration */}
             <div className="space-y-4 border-t pt-4">
-              <Label className="text-sm font-semibold">Configuración del Partido</Label>
-              
+              <Label className="text-sm font-semibold">
+                Configuración del Partido
+              </Label>
+
               <div className="flex items-center justify-between rounded-lg border p-3">
                 <div className="space-y-0.5">
                   <Label className="text-sm font-medium">Golden Point</Label>
@@ -407,8 +585,11 @@ export default function NewMatchPage() {
                 </div>
                 <Switch
                   checked={matchConfig.goldenPoint}
-                  onCheckedChange={(checked) => 
-                    setMatchConfig(prev => ({ ...prev, goldenPoint: checked }))
+                  onCheckedChange={(checked) =>
+                    setMatchConfig((prev) => ({
+                      ...prev,
+                      goldenPoint: checked,
+                    }))
                   }
                 />
               </div>
@@ -422,8 +603,11 @@ export default function NewMatchPage() {
                 </div>
                 <Switch
                   checked={matchConfig.superTiebreak}
-                  onCheckedChange={(checked) => 
-                    setMatchConfig(prev => ({ ...prev, superTiebreak: checked }))
+                  onCheckedChange={(checked) =>
+                    setMatchConfig((prev) => ({
+                      ...prev,
+                      superTiebreak: checked,
+                    }))
                   }
                 />
               </div>
@@ -434,15 +618,19 @@ export default function NewMatchPage() {
         {/* Teams */}
         <div className="grid gap-4">
           {/* Team 1 */}
-          <Card className={winnerTeam === 1 ? 'ring-2 ring-primary' : ''}>
+          <Card className={winnerTeam === 1 ? "ring-2 ring-primary" : ""}>
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center gap-2 text-base">
                   Equipo 1
-                  {winnerTeam === 1 && <Trophy className="h-4 w-4 text-primary" />}
+                  {winnerTeam === 1 && (
+                    <Trophy className="h-4 w-4 text-primary" />
+                  )}
                 </CardTitle>
                 {winnerTeam === 1 && (
-                  <span className="text-xs font-medium text-primary">Ganador</span>
+                  <span className="text-xs font-medium text-primary">
+                    Ganador
+                  </span>
                 )}
               </div>
             </CardHeader>
@@ -455,7 +643,11 @@ export default function NewMatchPage() {
                     <p className="font-medium">{currentUser.display_name}</p>
                     <p className="text-xs text-muted-foreground">Vos</p>
                   </div>
-                  <EloBadge elo={currentUser.elo_score} category={currentUser.category_label} size="sm" />
+                  <EloBadge
+                    elo={currentUser.elo_score}
+                    category={currentUser.category_label}
+                    size="sm"
+                  />
                 </div>
               )}
 
@@ -467,23 +659,27 @@ export default function NewMatchPage() {
                 onSelect={handlePlayerSelect}
                 onRemove={handleRemovePlayer}
                 onCreateGhost={(pos) => {
-                  setGhostPosition(pos)
-                  setShowGhostDialog(true)
+                  setGhostPosition(pos);
+                  setShowGhostDialog(true);
                 }}
               />
             </CardContent>
           </Card>
 
           {/* Team 2 */}
-          <Card className={winnerTeam === 2 ? 'ring-2 ring-primary' : ''}>
+          <Card className={winnerTeam === 2 ? "ring-2 ring-primary" : ""}>
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center gap-2 text-base">
                   Equipo 2
-                  {winnerTeam === 2 && <Trophy className="h-4 w-4 text-primary" />}
+                  {winnerTeam === 2 && (
+                    <Trophy className="h-4 w-4 text-primary" />
+                  )}
                 </CardTitle>
                 {winnerTeam === 2 && (
-                  <span className="text-xs font-medium text-primary">Ganador</span>
+                  <span className="text-xs font-medium text-primary">
+                    Ganador
+                  </span>
                 )}
               </div>
             </CardHeader>
@@ -495,8 +691,8 @@ export default function NewMatchPage() {
                 onSelect={handlePlayerSelect}
                 onRemove={handleRemovePlayer}
                 onCreateGhost={(pos) => {
-                  setGhostPosition(pos)
-                  setShowGhostDialog(true)
+                  setGhostPosition(pos);
+                  setShowGhostDialog(true);
                 }}
               />
               <PlayerSlot
@@ -506,8 +702,8 @@ export default function NewMatchPage() {
                 onSelect={handlePlayerSelect}
                 onRemove={handleRemovePlayer}
                 onCreateGhost={(pos) => {
-                  setGhostPosition(pos)
-                  setShowGhostDialog(true)
+                  setGhostPosition(pos);
+                  setShowGhostDialog(true);
                 }}
               />
             </CardContent>
@@ -540,46 +736,91 @@ export default function NewMatchPage() {
                 <span></span>
                 {sets.map((set, i) => (
                   <span key={i} className="text-center">
-                    {matchConfig.superTiebreak && i === 2 ? 'STB' : `Set ${i + 1}`}
+                    {matchConfig.superTiebreak && i === 2
+                      ? "STB"
+                      : `Set ${i + 1}`}
                   </span>
                 ))}
               </div>
 
               {/* Team 1 Row */}
-              <div className="grid grid-cols-[1fr_repeat(3,_4rem)] items-center gap-2">
-                <span className={`text-sm font-medium ${winnerTeam === 1 ? 'text-primary' : ''}`}>
-                  Equipo 1
-                </span>
-                {sets.map((set, i) => (
-                  <Input
-                    key={`t1-${i}`}
-                    type="number"
-                    min={0}
-                    max={matchConfig.superTiebreak && i === 2 ? 10 : 7}
-                    value={set.team1}
-                    onChange={(e) => handleSetScoreChange(i, 'team1', e.target.value)}
-                    className="h-12 text-center text-lg font-mono"
-                  />
-                ))}
+              <div className="space-y-2">
+                <div className="grid grid-cols-[1fr_repeat(3,_4rem)] items-center gap-2">
+                  <span
+                    className={`text-sm font-medium ${
+                      winnerTeam === 1 ? "text-primary" : ""
+                    }`}
+                  >
+                    Equipo 1
+                  </span>
+                  {sets.map((set, i) => (
+                    <div key={`t1-${i}`} className="flex flex-col">
+                      <Input
+                        type="text"
+                        inputMode="numeric"
+                        maxLength={2}
+                        value={setInputValues[i]?.team1 ?? set.team1.toString()}
+                        onChange={(e) =>
+                          handleSetScoreChange(i, "team1", e.target.value)
+                        }
+                        onBlur={() => handleSetScoreBlur(i, "team1")}
+                        className={`h-12 text-center text-lg font-mono ${
+                          setErrors[i]?.team1 ? "border-destructive" : ""
+                        }`}
+                        placeholder="0"
+                      />
+                      {setErrors[i]?.team1 && (
+                        <p className="mt-1 text-xs text-destructive">
+                          {setErrors[i].team1}
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
               </div>
 
               {/* Team 2 Row */}
-              <div className="grid grid-cols-[1fr_repeat(3,_4rem)] items-center gap-2">
-                <span className={`text-sm font-medium ${winnerTeam === 2 ? 'text-primary' : ''}`}>
-                  Equipo 2
-                </span>
-                {sets.map((set, i) => (
-                  <Input
-                    key={`t2-${i}`}
-                    type="number"
-                    min={0}
-                    max={matchConfig.superTiebreak && i === 2 ? 10 : 7}
-                    value={set.team2}
-                    onChange={(e) => handleSetScoreChange(i, 'team2', e.target.value)}
-                    className="h-12 text-center text-lg font-mono"
-                  />
-                ))}
+              <div className="space-y-2">
+                <div className="grid grid-cols-[1fr_repeat(3,_4rem)] items-center gap-2">
+                  <span
+                    className={`text-sm font-medium ${
+                      winnerTeam === 2 ? "text-primary" : ""
+                    }`}
+                  >
+                    Equipo 2
+                  </span>
+                  {sets.map((set, i) => (
+                    <div key={`t2-${i}`} className="flex flex-col">
+                      <Input
+                        type="text"
+                        inputMode="numeric"
+                        maxLength={2}
+                        value={setInputValues[i]?.team2 ?? set.team2.toString()}
+                        onChange={(e) =>
+                          handleSetScoreChange(i, "team2", e.target.value)
+                        }
+                        onBlur={() => handleSetScoreBlur(i, "team2")}
+                        className={`h-12 text-center text-lg font-mono ${
+                          setErrors[i]?.team2 ? "border-destructive" : ""
+                        }`}
+                        placeholder="0"
+                      />
+                      {setErrors[i]?.team2 && (
+                        <p className="mt-1 text-xs text-destructive">
+                          {setErrors[i].team2}
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
               </div>
+
+              {/* Validation Error */}
+              {validationError && (
+                <Alert variant="destructive">
+                  <AlertDescription>{validationError}</AlertDescription>
+                </Alert>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -588,7 +829,16 @@ export default function NewMatchPage() {
         <Button
           className="w-full py-6 text-lg"
           onClick={handleSubmit}
-          disabled={savingMatch || !currentUser || !team1Player2 || !team2Player1 || !team2Player2 || !winnerTeam}
+          disabled={
+            savingMatch ||
+            !currentUser ||
+            !team1Player2 ||
+            !team2Player1 ||
+            !team2Player2 ||
+            !winnerTeam ||
+            !!validationError ||
+            setErrors.some((err) => Object.keys(err).length > 0)
+          }
         >
           {savingMatch && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
           Guardar Partido
@@ -616,7 +866,9 @@ export default function NewMatchPage() {
                 <Label>Categoría Estimada</Label>
                 <Select
                   value={newGhostCategory}
-                  onValueChange={(v) => setNewGhostCategory(v as PlayerCategory)}
+                  onValueChange={(v) =>
+                    setNewGhostCategory(v as PlayerCategory)
+                  }
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -635,7 +887,9 @@ export default function NewMatchPage() {
                 onClick={handleCreateGhost}
                 disabled={!newGhostName.trim() || creatingGhost}
               >
-                {creatingGhost && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {creatingGhost && (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                )}
                 <UserPlus className="mr-2 h-4 w-4" />
                 Crear Jugador
               </Button>
@@ -648,7 +902,11 @@ export default function NewMatchPage() {
           open={showShareDialog}
           onOpenChange={setShowShareDialog}
           matchId={createdMatchId}
-          players={[team1Player2, team2Player1, team2Player2].filter(Boolean) as SelectedPlayer[]}
+          players={
+            [team1Player2, team2Player1, team2Player2].filter(
+              Boolean
+            ) as SelectedPlayer[]
+          }
           invitations={invitations}
           matchDate={`${matchDate}T${matchTime}:00`}
           venue={venue}
@@ -656,26 +914,36 @@ export default function NewMatchPage() {
         />
       </div>
     </>
-  )
+  );
 }
 
 // Player Slot Component
 interface PlayerSlotProps {
-  player: SelectedPlayer | null
-  position: 'team1-2' | 'team2-1' | 'team2-2'
-  availablePlayers: SelectedPlayer[]
-  onSelect: (player: SelectedPlayer, position: 'team1-2' | 'team2-1' | 'team2-2') => void
-  onRemove: (position: 'team1-2' | 'team2-1' | 'team2-2') => void
-  onCreateGhost: (position: 'team1-2' | 'team2-1' | 'team2-2') => void
+  player: SelectedPlayer | null;
+  position: "team1-2" | "team2-1" | "team2-2";
+  availablePlayers: SelectedPlayer[];
+  onSelect: (
+    player: SelectedPlayer,
+    position: "team1-2" | "team2-1" | "team2-2"
+  ) => void;
+  onRemove: (position: "team1-2" | "team2-1" | "team2-2") => void;
+  onCreateGhost: (position: "team1-2" | "team2-1" | "team2-2") => void;
 }
 
-function PlayerSlot({ player, position, availablePlayers, onSelect, onRemove, onCreateGhost }: PlayerSlotProps) {
-  const [open, setOpen] = useState(false)
-  const [search, setSearch] = useState('')
+function PlayerSlot({
+  player,
+  position,
+  availablePlayers,
+  onSelect,
+  onRemove,
+  onCreateGhost,
+}: PlayerSlotProps) {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
 
-  const filteredPlayers = availablePlayers.filter(p =>
+  const filteredPlayers = availablePlayers.filter((p) =>
     p.display_name.toLowerCase().includes(search.toLowerCase())
-  )
+  );
 
   if (player) {
     return (
@@ -691,7 +959,11 @@ function PlayerSlot({ player, position, availablePlayers, onSelect, onRemove, on
             <p className="text-xs text-muted-foreground">Invitado</p>
           )}
         </div>
-        <EloBadge elo={player.elo_score} category={player.category_label} size="sm" />
+        <EloBadge
+          elo={player.elo_score}
+          category={player.category_label}
+          size="sm"
+        />
         <Button
           variant="ghost"
           size="icon"
@@ -701,7 +973,7 @@ function PlayerSlot({ player, position, availablePlayers, onSelect, onRemove, on
           <X className="h-4 w-4" />
         </Button>
       </div>
-    )
+    );
   }
 
   return (
@@ -730,13 +1002,15 @@ function PlayerSlot({ player, position, availablePlayers, onSelect, onRemove, on
           <CommandList className="max-h-[50vh]">
             <CommandEmpty>
               <div className="py-6 text-center">
-                <p className="text-sm text-muted-foreground">No se encontraron jugadores</p>
+                <p className="text-sm text-muted-foreground">
+                  No se encontraron jugadores
+                </p>
                 <Button
                   variant="link"
                   className="mt-2"
                   onClick={() => {
-                    setOpen(false)
-                    onCreateGhost(position)
+                    setOpen(false);
+                    onCreateGhost(position);
                   }}
                 >
                   <UserPlus className="mr-2 h-4 w-4" />
@@ -750,8 +1024,8 @@ function PlayerSlot({ player, position, availablePlayers, onSelect, onRemove, on
                   key={p.id}
                   value={p.display_name}
                   onSelect={() => {
-                    onSelect(p, position)
-                    setOpen(false)
+                    onSelect(p, position);
+                    setOpen(false);
                   }}
                   className="flex items-center gap-3 p-3"
                 >
@@ -766,7 +1040,11 @@ function PlayerSlot({ player, position, availablePlayers, onSelect, onRemove, on
                       <p className="text-xs text-muted-foreground">Invitado</p>
                     )}
                   </div>
-                  <EloBadge elo={p.elo_score} category={p.category_label} size="sm" />
+                  <EloBadge
+                    elo={p.elo_score}
+                    category={p.category_label}
+                    size="sm"
+                  />
                 </CommandItem>
               ))}
             </CommandGroup>
@@ -775,8 +1053,8 @@ function PlayerSlot({ player, position, availablePlayers, onSelect, onRemove, on
                 variant="ghost"
                 className="w-full justify-start"
                 onClick={() => {
-                  setOpen(false)
-                  onCreateGhost(position)
+                  setOpen(false);
+                  onCreateGhost(position);
                 }}
               >
                 <UserPlus className="mr-2 h-4 w-4" />
@@ -787,5 +1065,5 @@ function PlayerSlot({ player, position, availablePlayers, onSelect, onRemove, on
         </Command>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

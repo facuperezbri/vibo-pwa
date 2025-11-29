@@ -1,6 +1,6 @@
+import { ServiceWorkerProvider } from "@/components/notifications/service-worker-provider";
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
-import { ServiceWorkerProvider } from "@/components/notifications/service-worker-provider";
 
 // Use Apple's SF Pro font family (system fonts)
 // These are the native fonts on iOS/macOS
@@ -18,7 +18,8 @@ const fontMono = {
 
 export const metadata: Metadata = {
   title: "Padelio",
-  description: "Track your padel matches, calculate ELO rankings, and compete with friends",
+  description:
+    "Track your padel matches, calculate ELO rankings, and compete with friends",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
@@ -55,14 +56,12 @@ export default function RootLayout({
       <body
         className={`${fontSans.variable} ${fontMono.variable} antialiased min-h-screen bg-background`}
         style={{
-          fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif',
+          fontFamily:
+            '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif',
         }}
       >
-        <ServiceWorkerProvider>
-          {children}
-        </ServiceWorkerProvider>
+        <ServiceWorkerProvider>{children}</ServiceWorkerProvider>
       </body>
     </html>
   );
 }
-

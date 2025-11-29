@@ -1,12 +1,12 @@
-'use client'
+"use client";
 
-import Link from 'next/link'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { TrendingUp, TrendingDown } from 'lucide-react'
-import { useData } from '@/contexts/data-context'
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useData } from "@/contexts/data-context";
+import { TrendingDown, TrendingUp } from "lucide-react";
+import Link from "next/link";
 
 export function RecentMatches() {
-  const { stats } = useData()
+  const { stats } = useData();
 
   if (stats.loading) {
     return (
@@ -19,7 +19,10 @@ export function RecentMatches() {
         </CardHeader>
         <CardContent className="space-y-2">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="flex items-center justify-between rounded-lg bg-muted/50 p-3">
+            <div
+              key={i}
+              className="flex items-center justify-between rounded-lg bg-muted/50 p-3"
+            >
               <div className="flex items-center gap-3">
                 <div className="h-8 w-8 rounded-full bg-muted animate-pulse" />
                 <div className="space-y-1">
@@ -32,7 +35,7 @@ export function RecentMatches() {
           ))}
         </CardContent>
       </Card>
-    )
+    );
   }
 
   return (
@@ -40,7 +43,10 @@ export function RecentMatches() {
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-base">Partidos Recientes</CardTitle>
-          <Link href="/matches" className="text-sm text-primary hover:underline">
+          <Link
+            href="/matches"
+            className="text-sm text-primary hover:underline"
+          >
             Ver todos
           </Link>
         </div>
@@ -52,11 +58,13 @@ export function RecentMatches() {
           </p>
         ) : (
           stats.recentMatches.map((match) => {
-            const position = match.player_position || 0
-            const isTeam1 = position <= 2
-            const won = (isTeam1 && match.winner_team === 1) || (!isTeam1 && match.winner_team === 2)
-            const eloKey = `player_${position}` as const
-            const eloChange = match.elo_changes?.[eloKey]?.change || 0
+            const position = match.player_position || 0;
+            const isTeam1 = position <= 2;
+            const won =
+              (isTeam1 && match.winner_team === 1) ||
+              (!isTeam1 && match.winner_team === 2);
+            const eloKey = `player_${position}` as const;
+            const eloChange = match.elo_changes?.[eloKey]?.change || 0;
 
             return (
               <Link
@@ -67,40 +75,46 @@ export function RecentMatches() {
                 <div className="flex items-center gap-3">
                   <div
                     className={`flex h-8 w-8 items-center justify-center rounded-full ${
-                      won ? 'bg-green-500/20 text-green-500' : 'bg-red-500/20 text-red-500'
+                      won
+                        ? "bg-green-500/20 text-green-500"
+                        : "bg-red-500/20 text-red-500"
                     }`}
                   >
-                    {won ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
+                    {won ? (
+                      <TrendingUp className="h-4 w-4" />
+                    ) : (
+                      <TrendingDown className="h-4 w-4" />
+                    )}
                   </div>
                   <div>
                     <p className="text-sm font-medium">
-                      {won ? 'Victoria' : 'Derrota'}
+                      {won ? "Victoria" : "Derrota"}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {new Date(match.match_date).toLocaleDateString('es-AR', {
-                        day: 'numeric',
-                        month: 'short',
-                      })}{' '}
-                      {new Date(match.match_date).toLocaleTimeString('es-AR', {
-                        hour: '2-digit',
-                        minute: '2-digit',
+                      {new Date(match.match_date).toLocaleDateString("es-AR", {
+                        day: "numeric",
+                        month: "short",
+                      })}{" "}
+                      {new Date(match.match_date).toLocaleTimeString("es-AR", {
+                        hour: "2-digit",
+                        minute: "2-digit",
                       })}
                     </p>
                   </div>
                 </div>
                 <span
                   className={`text-sm font-semibold ${
-                    eloChange >= 0 ? 'text-green-500' : 'text-red-500'
+                    eloChange >= 0 ? "text-green-500" : "text-red-500"
                   }`}
                 >
-                  {eloChange >= 0 ? '+' : ''}{Math.round(eloChange)}
+                  {eloChange >= 0 ? "+" : ""}
+                  {Math.round(eloChange)}
                 </span>
               </Link>
-            )
+            );
           })
         )}
       </CardContent>
     </Card>
-  )
+  );
 }
-

@@ -1,12 +1,12 @@
-'use client'
+"use client";
 
-import { Card, CardContent } from '@/components/ui/card'
-import { PlayerAvatar } from '@/components/ui/player-avatar'
-import { EloBadge } from '@/components/ui/elo-badge'
-import { useData } from '@/contexts/data-context'
+import { Card, CardContent } from "@/components/ui/card";
+import { EloBadge } from "@/components/ui/elo-badge";
+import { PlayerAvatar } from "@/components/ui/player-avatar";
+import { useData } from "@/contexts/data-context";
 
 export function ProfileSummary() {
-  const { stats } = useData()
+  const { stats } = useData();
 
   if (stats.loading) {
     return (
@@ -22,7 +22,7 @@ export function ProfileSummary() {
           </div>
         </CardContent>
       </Card>
-    )
+    );
   }
 
   return (
@@ -30,20 +30,22 @@ export function ProfileSummary() {
       <CardContent className="p-6">
         <div className="flex items-center gap-4">
           <PlayerAvatar
-            name={stats.profile?.full_name || stats.profile?.username || 'Usuario'}
+            name={
+              stats.profile?.full_name || stats.profile?.username || "Usuario"
+            }
             avatarUrl={stats.profile?.avatar_url}
             size="xl"
           />
           <div className="flex-1">
             <h2 className="text-xl font-bold">
-              {stats.profile?.full_name || stats.profile?.username || 'Usuario'}
+              {stats.profile?.full_name || stats.profile?.username || "Usuario"}
             </h2>
             <p className="text-sm text-muted-foreground">
-              @{stats.profile?.username || 'sin_username'}
+              @{stats.profile?.username || "sin_username"}
             </p>
             <div className="mt-2">
-              <EloBadge 
-                elo={stats.profile?.elo_score || 1400} 
+              <EloBadge
+                elo={stats.profile?.elo_score || 1400}
                 category={stats.profile?.category_label}
                 size="lg"
               />
@@ -52,6 +54,5 @@ export function ProfileSummary() {
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }
-

@@ -22,6 +22,12 @@ export function AnimatedNumber({
   const [displayValue, setDisplayValue] = useState(0)
   const animationFrameRef = useRef<number>()
   const startValueRef = useRef(0)
+  const displayValueRef = useRef(0)
+
+  // Keep ref in sync with displayValue state
+  useEffect(() => {
+    displayValueRef.current = displayValue
+  }, [displayValue])
 
   useEffect(() => {
     // Cancel any ongoing animation
@@ -29,7 +35,7 @@ export function AnimatedNumber({
       cancelAnimationFrame(animationFrameRef.current)
     }
 
-    const startValue = displayValue
+    const startValue = displayValueRef.current
     startValueRef.current = startValue
     const endValue = value
     const difference = endValue - startValue

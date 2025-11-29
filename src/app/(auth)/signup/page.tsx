@@ -1,55 +1,66 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import Link from 'next/link'
-import { createClient } from '@/lib/supabase/client'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Alert, AlertDescription } from '@/components/ui/alert'
+import { OAuthButtons } from "@/components/auth/oauth-buttons";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
-import { Loader2, Mail, Lock, User, Swords } from 'lucide-react'
-import { CATEGORIES, CATEGORY_ELO_MAP, CATEGORY_LABELS, type PlayerCategory } from '@/types/database'
-import { OAuthButtons } from '@/components/auth/oauth-buttons'
+} from "@/components/ui/select";
+import { createClient } from "@/lib/supabase/client";
+import {
+  CATEGORIES,
+  CATEGORY_ELO_MAP,
+  CATEGORY_LABELS,
+  type PlayerCategory,
+} from "@/types/database";
+import { Loader2, Lock, Mail, Swords, User } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export default function SignupPage() {
   const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-    fullName: '',
-    username: '',
-    category: '6ta' as PlayerCategory,
-  })
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [success, setSuccess] = useState(false)
-  const [mounted, setMounted] = useState(false)
-  const router = useRouter()
+    email: "",
+    password: "",
+    fullName: "",
+    username: "",
+    category: "6ta" as PlayerCategory,
+  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
-    setMounted(true)
-  }, [])
+    setMounted(true);
+  }, []);
 
   async function handleSignup(e: React.FormEvent) {
-    e.preventDefault()
-    if (!mounted) return
-    
-    setLoading(true)
-    setError(null)
+    e.preventDefault();
+    if (!mounted) return;
+
+    setLoading(true);
+    setError(null);
 
     try {
-      const supabase = createClient()
-      
+      const supabase = createClient();
+
       // Calculate initial ELO based on category
-      const initialElo = CATEGORY_ELO_MAP[formData.category]
+      const initialElo = CATEGORY_ELO_MAP[formData.category];
 
       const { error: signUpError } = await supabase.auth.signUp({
         email: formData.email,
@@ -60,52 +71,54 @@ export default function SignupPage() {
             username: formData.username,
           },
         },
-      })
+      });
 
       if (signUpError) {
-        setError(signUpError.message)
-        setLoading(false)
-        return
+        setError(signUpError.message);
+        setLoading(false);
+        return;
       }
 
       // Update the profile with category and ELO
       // Note: This relies on the trigger to create the profile first
       // We'll update it immediately after signup
-      const { data: { user } } = await supabase.auth.getUser()
-      
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
       if (user) {
         await supabase
-          .from('profiles')
+          .from("profiles")
           .update({
             elo_score: initialElo,
             category_label: formData.category,
             full_name: formData.fullName,
             username: formData.username,
           })
-          .eq('id', user.id)
+          .eq("id", user.id);
 
         // Also update the auto-created player record
         await supabase
-          .from('players')
+          .from("players")
           .update({
             elo_score: initialElo,
             category_label: formData.category,
             display_name: formData.fullName || formData.username,
           })
-          .eq('profile_id', user.id)
+          .eq("profile_id", user.id);
       }
 
-      setSuccess(true)
-      setLoading(false)
+      setSuccess(true);
+      setLoading(false);
 
       // Redirect after successful signup
       setTimeout(() => {
-        router.push('/')
-        router.refresh()
-      }, 2000)
+        router.push("/");
+        router.refresh();
+      }, 2000);
     } catch {
-      setError('Error al crear la cuenta')
-      setLoading(false)
+      setError("Error al crear la cuenta");
+      setLoading(false);
     }
   }
 
@@ -122,9 +135,7 @@ export default function SignupPage() {
       <Card className="w-full max-w-sm border-0 bg-card/50 backdrop-blur">
         <CardHeader className="space-y-1 pb-4 text-center">
           <CardTitle className="text-xl">Crear Cuenta</CardTitle>
-          <CardDescription>
-            Completá tus datos para empezar
-          </CardDescription>
+          <CardDescription>Completá tus datos para empezar</CardDescription>
         </CardHeader>
         <CardContent>
           {success ? (
@@ -150,7 +161,9 @@ export default function SignupPage() {
                     type="text"
                     placeholder="Juan Pérez"
                     value={formData.fullName}
-                    onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, fullName: e.target.value })
+                    }
                     className="pl-10"
                     required
                   />
@@ -160,13 +173,22 @@ export default function SignupPage() {
               <div className="space-y-2">
                 <Label htmlFor="username">Usuario</Label>
                 <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">@</span>
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                    @
+                  </span>
                   <Input
                     id="username"
                     type="text"
                     placeholder="juanperez"
                     value={formData.username}
-                    onChange={(e) => setFormData({ ...formData, username: e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '') })}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        username: e.target.value
+                          .toLowerCase()
+                          .replace(/[^a-z0-9_]/g, ""),
+                      })
+                    }
                     className="pl-8"
                     required
                   />
@@ -182,7 +204,9 @@ export default function SignupPage() {
                     type="email"
                     placeholder="tu@email.com"
                     value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, email: e.target.value })
+                    }
                     className="pl-10"
                     required
                   />
@@ -198,7 +222,9 @@ export default function SignupPage() {
                     type="password"
                     placeholder="Mínimo 6 caracteres"
                     value={formData.password}
-                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, password: e.target.value })
+                    }
                     className="pl-10"
                     minLength={6}
                     required
@@ -210,7 +236,12 @@ export default function SignupPage() {
                 <Label htmlFor="category">Tu Categoría de Padel</Label>
                 <Select
                   value={formData.category}
-                  onValueChange={(value) => setFormData({ ...formData, category: value as PlayerCategory })}
+                  onValueChange={(value) =>
+                    setFormData({
+                      ...formData,
+                      category: value as PlayerCategory,
+                    })
+                  }
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Selecciona tu categoría" />
@@ -229,11 +260,16 @@ export default function SignupPage() {
                   </SelectContent>
                 </Select>
                 <p className="text-xs text-muted-foreground">
-                  Tu ELO inicial será de {CATEGORY_ELO_MAP[formData.category]} puntos
+                  Tu ELO inicial será de {CATEGORY_ELO_MAP[formData.category]}{" "}
+                  puntos
                 </p>
               </div>
 
-              <Button type="submit" className="w-full" disabled={loading || !mounted}>
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={loading || !mounted}
+              >
                 {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Crear Cuenta
               </Button>
@@ -248,12 +284,15 @@ export default function SignupPage() {
 
           <div className="mt-6 text-center text-sm">
             <span className="text-muted-foreground">¿Ya tenés cuenta? </span>
-            <Link href="/login" className="font-medium text-primary hover:underline">
+            <Link
+              href="/login"
+              className="font-medium text-primary hover:underline"
+            >
               Iniciá sesión
             </Link>
           </div>
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

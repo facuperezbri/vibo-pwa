@@ -1,25 +1,27 @@
-import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
-import { Header } from '@/components/layout/header'
-import { ProfileSummary } from '@/components/home/profile-summary'
-import { StatsGrid } from '@/components/home/stats-grid'
-import { RecentMatches } from '@/components/home/recent-matches'
-import { Swords } from 'lucide-react'
-import Link from 'next/link'
+import { ProfileSummary } from "@/components/home/profile-summary";
+import { RecentMatches } from "@/components/home/recent-matches";
+import { StatsGrid } from "@/components/home/stats-grid";
+import { Header } from "@/components/layout/header";
+import { createClient } from "@/lib/supabase/server";
+import { Swords } from "lucide-react";
+import Link from "next/link";
+import { redirect } from "next/navigation";
 
 export default async function HomePage() {
-  const supabase = await createClient()
-  
-  const { data: { user } } = await supabase.auth.getUser()
-  
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
   if (!user) {
-    redirect('/login')
+    redirect("/login");
   }
 
   return (
     <>
       <Header title="Padelio" />
-      
+
       <div className="space-y-6 p-4">
         <ProfileSummary />
         <StatsGrid />
@@ -35,6 +37,5 @@ export default async function HomePage() {
         </Link>
       </div>
     </>
-  )
+  );
 }
-

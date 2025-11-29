@@ -1,74 +1,76 @@
 // Padelio Service Worker for Push Notifications
 
-const CACHE_NAME = 'padelio-v1';
-const urlsToCache = [
-  '/',
-  '/manifest.json',
-];
+const CACHE_NAME = "padelio-v1";
+const urlsToCache = ["/", "/manifest.json"];
 
 // Install event - cache essential files
-self.addEventListener('install', (event) => {
+self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME)
+    caches
+      .open(CACHE_NAME)
       .then((cache) => cache.addAll(urlsToCache))
       .then(() => self.skipWaiting())
   );
 });
 
 // Activate event - clean up old caches
-self.addEventListener('activate', (event) => {
+self.addEventListener("activate", (event) => {
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames
-          .filter((name) => name !== CACHE_NAME)
-          .map((name) => caches.delete(name))
-      );
-    }).then(() => self.clients.claim())
+    caches
+      .keys()
+      .then((cacheNames) => {
+        return Promise.all(
+          cacheNames
+            .filter((name) => name !== CACHE_NAME)
+            .map((name) => caches.delete(name))
+        );
+      })
+      .then(() => self.clients.claim())
   );
 });
 
 // Push event - handle incoming push notifications
-self.addEventListener('push', (event) => {
+self.addEventListener("push", (event) => {
   if (!event.data) return;
 
   try {
     const data = event.data.json();
-    
+
     const options = {
-      body: data.body || '',
-      icon: '/icon-192.png',
-      badge: '/icon-192.png',
+      body: data.body || "",
+      icon: "/icon-192.png",
+      badge: "/icon-192.png",
       vibrate: [100, 50, 100],
       data: {
-        url: data.url || '/',
-        ...data.data
+        url: data.url || "/",
+        ...data.data,
       },
       actions: data.actions || [],
-      tag: data.tag || 'padelio-notification',
+      tag: data.tag || "padelio-notification",
       renotify: true,
     };
 
     event.waitUntil(
-      self.registration.showNotification(data.title || 'Padelio', options)
+      self.registration.showNotification(data.title || "Padelio", options)
     );
   } catch (error) {
-    console.error('Error showing notification:', error);
+    console.error("Error showing notification:", error);
   }
 });
 
 // Notification click event - handle notification interactions
-self.addEventListener('notificationclick', (event) => {
+self.addEventListener("notificationclick", (event) => {
   event.notification.close();
 
-  const url = event.notification.data?.url || '/';
+  const url = event.notification.data?.url || "/";
 
   event.waitUntil(
-    clients.matchAll({ type: 'window', includeUncontrolled: true })
+    clients
+      .matchAll({ type: "window", includeUncontrolled: true })
       .then((clientList) => {
         // If a window is already open, focus it
         for (const client of clientList) {
-          if (client.url === url && 'focus' in client) {
+          if (client.url === url && "focus" in client) {
             return client.focus();
           }
         }
@@ -81,15 +83,15 @@ self.addEventListener('notificationclick', (event) => {
 });
 
 // Handle notification close
-self.addEventListener('notificationclose', (event) => {
-  console.log('Notification closed:', event.notification.tag);
+self.addEventListener("notificationclose", (event) => {
+  console.log("Notification closed:", event.notification.tag);
 });
 
 // Fetch event - network first, then cache
-self.addEventListener('fetch', (event) => {
+self.addEventListener("fetch", (event) => {
   // Skip non-GET requests
-  if (event.request.method !== 'GET') return;
-  
+  if (event.request.method !== "GET") return;
+
   // Skip external requests
   if (!event.request.url.startsWith(self.location.origin)) return;
 
@@ -98,11 +100,11 @@ self.addEventListener('fetch', (event) => {
       .then((response) => {
         // Clone the response before caching
         const responseClone = response.clone();
-        caches.open(CACHE_NAME)
+        caches
+          .open(CACHE_NAME)
           .then((cache) => cache.put(event.request, responseClone));
         return response;
       })
       .catch(() => caches.match(event.request))
   );
 });
-

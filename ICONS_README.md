@@ -15,16 +15,19 @@ Los SVG funcionan bien, pero algunos navegadores prefieren PNG. Para generar los
 ### Opción 1: Usar el script incluido
 
 1. Instalá sharp:
+
 ```bash
 npm install sharp --save-dev
 ```
 
 2. Ejecutá el script:
+
 ```bash
 node scripts/generate-icons.js
 ```
 
 Esto generará:
+
 - `icon-192.png`
 - `icon-512.png`
 - `apple-icon.png`
@@ -32,6 +35,7 @@ Esto generará:
 ### Opción 2: Usar herramientas online
 
 Podés usar herramientas como:
+
 - [CloudConvert](https://cloudconvert.com/svg-to-png)
 - [Convertio](https://convertio.co/svg-png/)
 - [SVG to PNG](https://svgtopng.com/)
@@ -47,6 +51,7 @@ Podés usar herramientas como:
 ## Personalizar los Iconos
 
 Los SVG actuales son placeholders simples con:
+
 - Fondo verde (#22c55e) - color primario de la app
 - Icono de raqueta de padel
 - Texto "P" o "Padelio"
@@ -54,17 +59,20 @@ Los SVG actuales son placeholders simples con:
 ### Para crear tus propios iconos:
 
 1. **Diseño recomendado:**
+
    - Fondo sólido o degradado
    - Icono de raqueta de padel prominente
    - Colores que coincidan con tu branding
    - Texto opcional (mejor sin texto para tamaños pequeños)
 
 2. **Tamaños:**
+
    - 192x192 px (mínimo recomendado)
    - 512x512 px (alta resolución)
    - 180x180 px (Apple)
 
 3. **Formato:**
+
    - SVG para mejor calidad y escalabilidad
    - PNG como fallback para compatibilidad
 
@@ -90,4 +98,3 @@ Los SVG actuales son placeholders simples con:
 - Los PNG son necesarios para algunos navegadores antiguos
 - Apple requiere PNG específicamente para el icono de home screen
 - Asegurate de que los iconos tengan buen contraste para modo claro y oscuro
-

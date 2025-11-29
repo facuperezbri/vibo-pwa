@@ -1,16 +1,18 @@
-'use client'
+"use client";
 
-import { Card, CardContent } from '@/components/ui/card'
-import { Swords, Trophy, Target, TrendingUp } from 'lucide-react'
-import { useData } from '@/contexts/data-context'
-import { AnimatedNumberSimple } from '@/components/ui/animated-number'
+import { AnimatedNumberSimple } from "@/components/ui/animated-number";
+import { Card, CardContent } from "@/components/ui/card";
+import { useData } from "@/contexts/data-context";
+import { Swords, Target, TrendingUp, Trophy } from "lucide-react";
 
 export function StatsGrid() {
-  const { stats } = useData()
+  const { stats } = useData();
 
-  const winRate = stats.profile?.matches_played 
-    ? Math.round((stats.profile.matches_won / stats.profile.matches_played) * 100) 
-    : 0
+  const winRate = stats.profile?.matches_played
+    ? Math.round(
+        (stats.profile.matches_won / stats.profile.matches_played) * 100
+      )
+    : 0;
 
   return (
     <div className="grid grid-cols-2 gap-3">
@@ -21,8 +23,8 @@ export function StatsGrid() {
           </div>
           <div>
             <p className="text-2xl font-bold">
-              <AnimatedNumberSimple 
-                value={stats.profile?.matches_played || 0} 
+              <AnimatedNumberSimple
+                value={stats.profile?.matches_played || 0}
                 duration={800}
               />
             </p>
@@ -30,7 +32,7 @@ export function StatsGrid() {
           </div>
         </CardContent>
       </Card>
-      
+
       <Card>
         <CardContent className="flex items-center gap-3 p-4">
           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-500/10">
@@ -38,8 +40,8 @@ export function StatsGrid() {
           </div>
           <div>
             <p className="text-2xl font-bold">
-              <AnimatedNumberSimple 
-                value={stats.profile?.matches_won || 0} 
+              <AnimatedNumberSimple
+                value={stats.profile?.matches_won || 0}
                 duration={800}
               />
             </p>
@@ -47,7 +49,7 @@ export function StatsGrid() {
           </div>
         </CardContent>
       </Card>
-      
+
       <Card>
         <CardContent className="flex items-center gap-3 p-4">
           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-500/10">
@@ -55,17 +57,13 @@ export function StatsGrid() {
           </div>
           <div>
             <p className="text-2xl font-bold">
-              <AnimatedNumberSimple 
-                value={winRate} 
-                duration={800}
-                suffix="%"
-              />
+              <AnimatedNumberSimple value={winRate} duration={800} suffix="%" />
             </p>
             <p className="text-xs text-muted-foreground">Win Rate</p>
           </div>
         </CardContent>
       </Card>
-      
+
       <Card>
         <CardContent className="flex items-center gap-3 p-4">
           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-500/10">
@@ -74,13 +72,13 @@ export function StatsGrid() {
           <div>
             <p className="text-2xl font-bold">
               {stats.ranking !== null ? (
-                <AnimatedNumberSimple 
-                  value={stats.ranking} 
+                <AnimatedNumberSimple
+                  value={stats.ranking}
                   duration={800}
                   prefix="#"
                 />
               ) : (
-                '-'
+                "-"
               )}
             </p>
             <p className="text-xs text-muted-foreground">Ranking</p>
@@ -88,6 +86,5 @@ export function StatsGrid() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
-

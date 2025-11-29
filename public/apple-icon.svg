@@ -1,0 +1,25 @@
+<svg width="180" height="180" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="180" height="180" rx="40" fill="#22c55e"/>
+  
+  <!-- Padel Racket Icon -->
+  <g transform="translate(45, 45)">
+    <!-- Racket handle -->
+    <rect x="68" y="75" width="7" height="30" rx="3.5" fill="white"/>
+    
+    <!-- Racket head -->
+    <ellipse cx="71.5" cy="56" rx="26" ry="18" fill="white" opacity="0.9"/>
+    <ellipse cx="71.5" cy="56" rx="22" ry="14" fill="none" stroke="#22c55e" stroke-width="2"/>
+    
+    <!-- Strings -->
+    <line x1="57" y1="56" x2="86" y2="56" stroke="#22c55e" stroke-width="1.5"/>
+    <line x1="61" y1="48" x2="82" y2="64" stroke="#22c55e" stroke-width="1.5"/>
+    <line x1="61" y1="64" x2="82" y2="48" stroke="#22c55e" stroke-width="1.5"/>
+    <line x1="65" y1="48" x2="65" y2="64" stroke="#22c55e" stroke-width="1.5"/>
+    <line x1="78" y1="48" x2="78" y2="64" stroke="#22c55e" stroke-width="1.5"/>
+  </g>
+  
+  <!-- Text -->
+  <text x="90" y="150" font-family="Arial, sans-serif" font-size="22" font-weight="bold" fill="white" text-anchor="middle">PT</text>
+</svg>
+

@@ -70,7 +70,7 @@ export function BottomNav() {
                 onClick={() => handleNavigation(item.href)}
                 className="group relative -mt-6 flex flex-col items-center touch-target"
               >
-                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary shadow-lg shadow-primary/25 transition-transform group-active:scale-95">
+                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary border-2 border-background shadow-lg shadow-primary/25 transition-transform group-active:scale-95">
                   <Icon className="h-6 w-6 text-primary-foreground" />
                 </div>
                 <span className="mt-1 text-[10px] font-medium text-muted-foreground">

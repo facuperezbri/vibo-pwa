@@ -4,6 +4,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { PlayerAvatar } from '@/components/ui/player-avatar'
 import { EloBadge } from '@/components/ui/elo-badge'
+import { NewPlayerBadge } from '@/components/ui/new-player-badge'
 import { Trophy, Medal, Award, Users } from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
 import type { GlobalRanking, PlayerCategory } from '@/types/database'
@@ -223,11 +224,12 @@ function RankingRow({
         />
         
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <p className="truncate font-medium">{name}</p>
             {isGhost && (
               <span className="text-xs text-muted-foreground">(Invitado)</span>
             )}
+            <NewPlayerBadge matchesPlayed={matchesPlayed} />
             {isCurrentUser && (
               <span className="rounded-full bg-primary/20 px-2 py-0.5 text-xs font-medium text-primary">
                 Vos

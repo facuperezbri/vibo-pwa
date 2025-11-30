@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { PlayerAvatar } from '@/components/ui/player-avatar'
 import { EloBadge } from '@/components/ui/elo-badge'
+import { NewPlayerBadge } from '@/components/ui/new-player-badge'
 import { ScoreDisplay } from '@/components/match/score-display'
 import { MapPin, Calendar, Trophy, TrendingUp, TrendingDown, Edit, Settings } from 'lucide-react'
 import type { SetScore, EloChanges, Player, MatchConfig } from '@/types/database'
@@ -204,10 +205,13 @@ function PlayerRow({ player, eloChange, won }: PlayerRowProps) {
         size="md"
       />
       <div className="flex-1">
-        <p className="font-medium">{player.display_name}</p>
-        {player.is_ghost && (
-          <p className="text-xs text-muted-foreground">Invitado</p>
-        )}
+        <div className="flex items-center gap-2 flex-wrap">
+          <p className="font-medium">{player.display_name}</p>
+          {player.is_ghost && (
+            <span className="text-xs text-muted-foreground">Invitado</span>
+          )}
+          <NewPlayerBadge matchesPlayed={player.matches_played || 0} />
+        </div>
       </div>
       
       <div className="flex items-center gap-2">

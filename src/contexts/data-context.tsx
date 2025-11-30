@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
+import { createContext, useContext, useEffect, useState, ReactNode, useCallback, useMemo, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import type { Profile, Player, Match } from '@/types/database'
 
@@ -31,9 +31,16 @@ export function DataProvider({ children }: { children: ReactNode }) {
     recentMatches: [],
     loading: true,
   })
-  const supabase = createClient()
+  const supabase = useMemo(() => createClient(), [])
+  const isLoadingRef = useRef(false)
 
-  async function loadStats() {
+  const loadStats = useCallback(async () => {
+    // Prevent multiple simultaneous calls
+    if (isLoadingRef.current) {
+      return
+    }
+    
+    isLoadingRef.current = true
     try {
       const { data: { user } } = await supabase.auth.getUser()
       
@@ -119,8 +126,10 @@ export function DataProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       console.error('Error loading stats:', error)
       setStats(prev => ({ ...prev, loading: false }))
+    } finally {
+      isLoadingRef.current = false
     }
-  }
+  }, [supabase])
 
   useEffect(() => {
     loadStats()
@@ -181,8 +190,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       matchesChannel.unsubscribe()
       rankingChannel.unsubscribe()
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [loadStats])
 
   return (
     <DataContext.Provider value={{ stats, refreshStats: loadStats }}>

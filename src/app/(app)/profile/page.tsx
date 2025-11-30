@@ -6,8 +6,10 @@ import {
   ProfileEditModeProvider,
 } from "@/components/profile/profile-edit-button-wrapper";
 import { ProfileForm } from "@/components/profile/profile-form";
+import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 import type { Player, Profile } from "@/types/database";
+import { HelpCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 
@@ -59,7 +61,22 @@ export default function ProfilePage() {
   if (loading || !profile) {
     return (
       <ProfileEditModeProvider>
-        <Header title="Perfil" rightAction={<ProfileEditButtonWrapper />} />
+        <Header
+          title="Perfil"
+          rightAction={
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="touch-target"
+                onClick={() => router.push("/help")}
+              >
+                <HelpCircle className="h-5 w-5" />
+              </Button>
+              <ProfileEditButtonWrapper />
+            </div>
+          }
+        />
         <div className="p-4">
           {/* Minimal loading state - page structure is already visible */}
         </div>
@@ -69,7 +86,22 @@ export default function ProfilePage() {
 
   return (
     <ProfileEditModeProvider>
-      <Header title="Perfil" rightAction={<ProfileEditButtonWrapper />} />
+      <Header
+        title="Perfil"
+        rightAction={
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="touch-target"
+              onClick={() => router.push("/help")}
+            >
+              <HelpCircle className="h-5 w-5" />
+            </Button>
+            <ProfileEditButtonWrapper />
+          </div>
+        }
+      />
       <ProfileForm
         initialProfile={profile}
         initialGhostPlayers={ghostPlayers}

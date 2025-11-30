@@ -24,6 +24,7 @@ import {
 import { EloBadge } from "@/components/ui/elo-badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { NewPlayerBadge } from "@/components/ui/new-player-badge";
 import { PlayerAvatar } from "@/components/ui/player-avatar";
 import {
   Select,
@@ -33,6 +34,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { useData } from "@/contexts/data-context";
 import { useNavigation } from "@/contexts/navigation-context";
 import {
   canPlayThirdSet,
@@ -74,6 +76,7 @@ type SelectedPlayer = Pick<
   | "elo_score"
   | "category_label"
   | "profile_id"
+  | "matches_played"
 > & {
   avatar_url?: string | null;
 };
@@ -173,6 +176,7 @@ export default function NewMatchPage() {
   const pathname = usePathname();
   const supabase = createClient();
   const { registerConfirmHandler } = useNavigation();
+  const { refreshStats } = useData();
   const errorRef = useRef<HTMLDivElement>(null);
   const topRef = useRef<HTMLDivElement>(null);
 
@@ -281,7 +285,7 @@ export default function NewMatchPage() {
     const { data: userPlayer, error: playerError } = await supabase
       .from("players")
       .select(
-        "id, display_name, is_ghost, elo_score, category_label, profile_id, profiles!left(avatar_url)"
+        "id, display_name, is_ghost, elo_score, category_label, profile_id, matches_played, profiles!left(avatar_url)"
       )
       .eq("profile_id", user.id)
       .maybeSingle();
@@ -331,7 +335,7 @@ export default function NewMatchPage() {
             }
           )
           .select(
-            "id, display_name, is_ghost, elo_score, category_label, profile_id"
+            "id, display_name, is_ghost, elo_score, category_label, profile_id, matches_played"
           )
           .single();
 
@@ -362,7 +366,7 @@ export default function NewMatchPage() {
     const { data: registeredPlayers } = await supabase
       .from("players")
       .select(
-        "id, display_name, is_ghost, elo_score, category_label, profile_id, profiles!left(avatar_url)"
+        "id, display_name, is_ghost, elo_score, category_label, profile_id, matches_played, profiles!left(avatar_url)"
       )
       .eq("is_ghost", false)
       .neq("profile_id", user.id) // Exclude current user
@@ -373,7 +377,7 @@ export default function NewMatchPage() {
     const { data: ghostPlayers } = await supabase
       .from("players")
       .select(
-        "id, display_name, is_ghost, elo_score, category_label, profile_id"
+        "id, display_name, is_ghost, elo_score, category_label, profile_id, matches_played"
       )
       .eq("is_ghost", true)
       .eq("created_by_user_id", user.id)
@@ -472,7 +476,7 @@ export default function NewMatchPage() {
         category_label: newGhostCategory,
       })
       .select(
-        "id, display_name, is_ghost, elo_score, category_label, profile_id"
+        "id, display_name, is_ghost, elo_score, category_label, profile_id, matches_played"
       )
       .single();
 
@@ -483,8 +487,8 @@ export default function NewMatchPage() {
     }
 
     // Add to available players and select
-    setAvailablePlayers((prev) => [...prev, newPlayer]);
-    handlePlayerSelect(newPlayer, ghostPosition);
+    setAvailablePlayers((prev) => [...prev, newPlayer as SelectedPlayer]);
+    handlePlayerSelect(newPlayer as SelectedPlayer, ghostPosition);
 
     // Reset dialog
     setShowGhostDialog(false);
@@ -722,6 +726,9 @@ export default function NewMatchPage() {
     setSuccess(true);
     setSavingMatch(false);
 
+    // Refresh stats to show the new match immediately
+    await refreshStats();
+
     // Show share dialog if there are players to share with
     const allPlayers = [team1Player2, team2Player1, team2Player2];
     const hasPlayersToShare = allPlayers.some((p) => !p.is_ghost || p.is_ghost);
@@ -732,7 +739,7 @@ export default function NewMatchPage() {
       // Reset form and scroll to top before redirecting
       resetForm();
       setTimeout(() => {
-        router.push("/matches");
+        router.push("/");
         router.refresh();
       }, 1500);
     }
@@ -779,10 +786,12 @@ export default function NewMatchPage() {
     }
   }
 
-  function handleShareComplete() {
+  async function handleShareComplete() {
     setShowShareDialog(false);
+    // Refresh stats to show the new match
+    await refreshStats();
     resetForm();
-    router.push("/matches");
+    router.push("/");
     router.refresh();
   }
 
@@ -1208,11 +1217,14 @@ export default function NewMatchPage() {
         {/* WhatsApp Share Dialog */}
         <WhatsAppShareDialog
           open={showShareDialog}
-          onOpenChange={(open) => {
+          onOpenChange={async (open) => {
             setShowShareDialog(open);
             if (!open && success) {
-              // If dialog is closed and match was successfully created, reset form
+              // If dialog is closed and match was successfully created, refresh stats and reset form
+              await refreshStats();
               resetForm();
+              router.push("/");
+              router.refresh();
             }
           }}
           matchId={createdMatchId}
@@ -1295,7 +1307,10 @@ function PlayerSlot({
           size="md"
         />
         <div className="flex-1">
-          <p className="font-medium">{player.display_name}</p>
+          <div className="flex items-center gap-2 flex-wrap">
+            <p className="font-medium">{player.display_name}</p>
+            <NewPlayerBadge matchesPlayed={player.matches_played || 0} />
+          </div>
           <p className="text-xs text-muted-foreground">
             {label || (player.is_ghost ? "Invitado" : "")}
           </p>
@@ -1381,7 +1396,10 @@ function PlayerSlot({
                     size="sm"
                   />
                   <div className="flex-1">
-                    <p className="font-medium">{p.display_name}</p>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="font-medium">{p.display_name}</p>
+                      <NewPlayerBadge matchesPlayed={p.matches_played || 0} />
+                    </div>
                     {p.is_ghost && (
                       <p className="text-xs text-muted-foreground">Invitado</p>
                     )}

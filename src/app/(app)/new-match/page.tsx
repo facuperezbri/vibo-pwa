@@ -1052,13 +1052,38 @@ export default function NewMatchPage() {
               {/* Team 1 Row */}
               <div className="space-y-2">
                 <div className="grid grid-cols-[1fr_repeat(3,_4rem)] items-center gap-2">
-                  <span
-                    className={`text-sm font-medium ${
-                      winnerTeam === 1 ? "text-primary" : ""
-                    }`}
-                  >
-                    Equipo 1
-                  </span>
+                  <div className="flex items-center gap-2">
+                    {currentUser && team1Player2 ? (
+                      <div className="flex -space-x-2">
+                        <PlayerAvatar
+                          name={currentUser.display_name}
+                          avatarUrl={currentUser.avatar_url}
+                          isGhost={currentUser.is_ghost}
+                          size="sm"
+                          className={`ring-2 ring-background ${
+                            winnerTeam === 1 ? "ring-primary" : ""
+                          }`}
+                        />
+                        <PlayerAvatar
+                          name={team1Player2.display_name}
+                          avatarUrl={team1Player2.avatar_url}
+                          isGhost={team1Player2.is_ghost}
+                          size="sm"
+                          className={`ring-2 ring-background ${
+                            winnerTeam === 1 ? "ring-primary" : ""
+                          }`}
+                        />
+                      </div>
+                    ) : (
+                      <span
+                        className={`text-sm font-medium ${
+                          winnerTeam === 1 ? "text-primary" : ""
+                        }`}
+                      >
+                        Equipo 1
+                      </span>
+                    )}
+                  </div>
                   {sets.map((set, i) => (
                     <div key={`t1-${i}`} className="flex flex-col">
                       <Input
@@ -1088,13 +1113,38 @@ export default function NewMatchPage() {
               {/* Team 2 Row */}
               <div className="space-y-2">
                 <div className="grid grid-cols-[1fr_repeat(3,_4rem)] items-center gap-2">
-                  <span
-                    className={`text-sm font-medium ${
-                      winnerTeam === 2 ? "text-primary" : ""
-                    }`}
-                  >
-                    Equipo 2
-                  </span>
+                  <div className="flex items-center gap-2">
+                    {team2Player1 && team2Player2 ? (
+                      <div className="flex -space-x-2">
+                        <PlayerAvatar
+                          name={team2Player1.display_name}
+                          avatarUrl={team2Player1.avatar_url}
+                          isGhost={team2Player1.is_ghost}
+                          size="sm"
+                          className={`ring-2 ring-background ${
+                            winnerTeam === 2 ? "ring-primary" : ""
+                          }`}
+                        />
+                        <PlayerAvatar
+                          name={team2Player2.display_name}
+                          avatarUrl={team2Player2.avatar_url}
+                          isGhost={team2Player2.is_ghost}
+                          size="sm"
+                          className={`ring-2 ring-background ${
+                            winnerTeam === 2 ? "ring-primary" : ""
+                          }`}
+                        />
+                      </div>
+                    ) : (
+                      <span
+                        className={`text-sm font-medium ${
+                          winnerTeam === 2 ? "text-primary" : ""
+                        }`}
+                      >
+                        Equipo 2
+                      </span>
+                    )}
+                  </div>
                   {sets.map((set, i) => (
                     <div key={`t2-${i}`} className="flex flex-col">
                       <Input

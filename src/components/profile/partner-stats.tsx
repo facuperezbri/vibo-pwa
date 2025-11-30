@@ -116,7 +116,7 @@ export function PartnerStatsComponent({ playerId, filterPartnerId, limit, showVi
             {showViewAllLink && (
               <Link
                 href="/partner-chemistry"
-                className="text-sm text-primary hover:underline"
+                className="text-sm text-secondary hover:underline font-medium"
               >
                 Ver todos
               </Link>

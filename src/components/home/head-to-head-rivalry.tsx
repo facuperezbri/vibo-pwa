@@ -95,7 +95,7 @@ export function HeadToHeadRivalry() {
           </CardTitle>
           <Link
             href="/rivalries"
-            className="text-sm text-primary hover:underline"
+            className="text-sm text-secondary hover:underline font-medium"
           >
             Ver todos
           </Link>

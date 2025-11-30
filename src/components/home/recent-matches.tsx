@@ -34,7 +34,7 @@ export function RecentMatches() {
           <CardTitle className="text-base">Partidos Recientes</CardTitle>
           <Link
             href="/matches"
-            className="text-sm text-primary hover:underline"
+            className="text-sm text-secondary hover:underline font-medium"
           >
             Ver todos
           </Link>

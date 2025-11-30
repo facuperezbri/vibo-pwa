@@ -67,7 +67,7 @@ export function PlayerMatchesWithUser({ targetPlayerId, currentUserPlayerId }: P
           <CardTitle className="text-base">Partidos Juntos</CardTitle>
           <Link
             href={`/player/${targetPlayerId}/matches-with/${currentUserPlayerId}`}
-            className="text-sm text-primary hover:underline"
+            className="text-sm text-secondary hover:underline font-medium"
           >
             Ver todos
           </Link>

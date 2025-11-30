@@ -1,6 +1,7 @@
 "use client";
 
 import { OAuthButtons } from "@/components/auth/oauth-buttons";
+import { ViboLogo } from "@/components/layout/vibo-logo";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,7 +14,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createClient } from "@/lib/supabase/client";
-import { Loader2, Lock, Mail, Swords } from "lucide-react";
+import { Loader2, Lock, Mail } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -71,10 +72,10 @@ export default function LoginPage() {
     <div className="flex min-h-screen flex-col items-center justify-center p-4">
       {/* Logo/Brand */}
       <div className="mb-8 flex flex-col items-center">
-        <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary">
-          <Swords className="h-8 w-8 text-primary-foreground" />
+        <div className="mb-4">
+          <ViboLogo size="lg" />
         </div>
-        <h1 className="text-2xl font-bold">Padelio</h1>
+        <h1 className="text-2xl font-bold">Vibo</h1>
         <p className="text-sm text-muted-foreground">
           Tu ranking, tus partidos
         </p>
@@ -127,6 +128,7 @@ export default function LoginPage() {
 
             <Button
               type="submit"
+              variant="secondary"
               className="w-full"
               disabled={loading || !mounted}
             >

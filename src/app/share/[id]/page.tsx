@@ -311,7 +311,7 @@ export default function ShareMatchPage({ params }: ShareMatchPageProps) {
             <Button asChild>
               <Link href="/login">
                 <LogIn className="mr-2 h-4 w-4" />
-                Ir a Padelio
+                Ir a Vibo
               </Link>
             </Button>
           </CardContent>
@@ -344,14 +344,14 @@ export default function ShareMatchPage({ params }: ShareMatchPageProps) {
         <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary">
           <Swords className="h-7 w-7 text-primary-foreground" />
         </div>
-        <h1 className="text-xl font-bold">Padelio</h1>
+        <h1 className="text-xl font-bold">Vibo</h1>
       </div>
 
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle>Resultado del Partido</CardTitle>
           <CardDescription>
-            Compartido desde Padelio
+            Compartido desde Vibo
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -441,7 +441,7 @@ export default function ShareMatchPage({ params }: ShareMatchPageProps) {
                     <Button
                       key={player.id}
                       variant={
-                        selectedPlayerId === player.id ? "default" : "outline"
+                        selectedPlayerId === player.id ? "secondary" : "outline"
                       }
                       className="h-auto flex-col items-start gap-2 p-3"
                       onClick={() => setSelectedPlayerId(player.id)}
@@ -463,6 +463,7 @@ export default function ShareMatchPage({ params }: ShareMatchPageProps) {
                 </div>
                 {selectedPlayerId && (
                   <Button
+                    variant="secondary"
                     className="w-full"
                     onClick={handleLinkPlayer}
                     disabled={linking}

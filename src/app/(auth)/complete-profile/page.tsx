@@ -1,5 +1,6 @@
 "use client";
 
+import { ViboLogo } from "@/components/layout/vibo-logo";
 import { ClaimGhostPlayers } from "@/components/profile/claim-ghost-players";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -262,10 +263,10 @@ export default function CompleteProfilePage() {
     <div className="flex min-h-screen flex-col items-center justify-center p-4">
       {/* Logo/Brand */}
       <div className="mb-6 flex flex-col items-center">
-        <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary">
-          <Swords className="h-7 w-7 text-primary-foreground" />
+        <div className="mb-3">
+          <ViboLogo size="md" />
         </div>
-        <h1 className="text-xl font-bold">Padelio</h1>
+        <h1 className="text-xl font-bold">Vibo</h1>
       </div>
 
       <Card className="w-full max-w-sm border-0 bg-card/50 backdrop-blur">
@@ -343,7 +344,7 @@ export default function CompleteProfilePage() {
                     <DialogHeader>
                       <DialogTitle>Sistema de Puntuación</DialogTitle>
                       <DialogDescription>
-                        Cómo funciona el sistema de puntuación en Padelio
+                        Cómo funciona el sistema de puntuación en Vibo
                       </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4 text-sm">
@@ -608,7 +609,12 @@ export default function CompleteProfilePage() {
               <ClaimGhostPlayers />
             </div>
 
-            <Button type="submit" className="w-full" disabled={saving}>
+            <Button
+              type="submit"
+              variant="secondary"
+              className="w-full"
+              disabled={saving}
+            >
               {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Continuar
             </Button>

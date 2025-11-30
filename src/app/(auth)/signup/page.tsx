@@ -1,6 +1,7 @@
 "use client";
 
 import { OAuthButtons } from "@/components/auth/oauth-buttons";
+import { ViboLogo } from "@/components/layout/vibo-logo";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -44,7 +45,6 @@ import {
   Mail,
   MapPin,
   Phone,
-  Swords,
   User,
   Users,
 } from "lucide-react";
@@ -200,10 +200,10 @@ export default function SignupPage() {
     <div className="flex min-h-screen flex-col items-center justify-center p-4">
       {/* Logo/Brand */}
       <div className="mb-6 flex flex-col items-center">
-        <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary">
-          <Swords className="h-7 w-7 text-primary-foreground" />
+        <div className="mb-3">
+          <ViboLogo size="md" />
         </div>
-        <h1 className="text-xl font-bold">Padelio</h1>
+        <h1 className="text-xl font-bold">Vibo</h1>
       </div>
 
       <Card className="w-full max-w-sm border-0 bg-card/50 backdrop-blur">
@@ -323,7 +323,7 @@ export default function SignupPage() {
                       <DialogHeader>
                         <DialogTitle>Sistema de Puntuación</DialogTitle>
                         <DialogDescription>
-                          Cómo funciona el sistema de puntuación en Padelio
+                          Cómo funciona el sistema de puntuación en Vibo
                         </DialogDescription>
                       </DialogHeader>
                       <div className="space-y-4 text-sm">
@@ -532,6 +532,7 @@ export default function SignupPage() {
 
               <Button
                 type="submit"
+                variant="secondary"
                 className="w-full"
                 disabled={loading || !mounted}
               >

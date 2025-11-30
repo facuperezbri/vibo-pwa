@@ -56,7 +56,7 @@ export function PlayerRecentMatches({ playerId }: PlayerRecentMatchesProps) {
           <CardTitle className="text-base">Últimos Partidos</CardTitle>
           <Link
             href={`/player/${playerId}/matches`}
-            className="text-sm text-primary hover:underline"
+            className="text-sm text-secondary hover:underline font-medium"
           >
             Ver todos
           </Link>

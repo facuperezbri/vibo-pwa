@@ -389,6 +389,7 @@ export function ClaimGhostPlayers() {
                               </Button>
                             ) : (
                               <Button
+                                variant="secondary"
                                 size="sm"
                                 onClick={() => handleClaim(player.id)}
                                 disabled={claiming === player.id}

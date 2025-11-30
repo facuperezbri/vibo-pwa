@@ -8,6 +8,7 @@ import { NewPlayerBadge } from '@/components/ui/new-player-badge'
 import { GhostPlayerBadge } from '@/components/ui/ghost-player-badge'
 import { PlayerStats } from '@/components/player/player-stats'
 import { PlayerRecentMatches } from '@/components/player/player-recent-matches'
+import { PlayerMatchesWithUser } from '@/components/player/player-matches-with-user'
 import { PlayerPartnerStats } from '@/components/player/player-partner-stats'
 import { Trophy, Users } from 'lucide-react'
 import type { Player, Profile } from '@/types/database'
@@ -103,6 +104,14 @@ export default async function PlayerProfilePage({ params }: PlayerProfileProps) 
 
         {/* Recent Matches */}
         <PlayerRecentMatches playerId={id} />
+
+        {/* Matches with current user (only if not current user) */}
+        {!isCurrentUser && currentUserPlayerId && (
+          <PlayerMatchesWithUser 
+            targetPlayerId={id}
+            currentUserPlayerId={currentUserPlayerId}
+          />
+        )}
 
         {/* Partner Stats (only if not current user and they have played together) */}
         {!isCurrentUser && currentUserPlayerId && (

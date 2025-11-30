@@ -1,4 +1,5 @@
 import { HomeRefresh } from "@/components/home/home-refresh";
+import { PartnerChemistry } from "@/components/home/partner-chemistry";
 import { ProfileSummary } from "@/components/home/profile-summary";
 import { RecentMatches } from "@/components/home/recent-matches";
 import { StatsGrid } from "@/components/home/stats-grid";
@@ -27,6 +28,7 @@ export default async function HomePage() {
       <div className="space-y-6 p-4">
         <ProfileSummary />
         <StatsGrid />
+        <PartnerChemistry />
         <RecentMatches />
 
         {/* Quick Action */}

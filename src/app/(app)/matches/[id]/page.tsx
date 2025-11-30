@@ -174,7 +174,7 @@ export default async function MatchDetailPage({ params }: MatchDetailProps) {
               )}
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className="flex flex-col gap-4">
             <PlayerRow
               player={player1}
               eloChange={eloChanges?.player_1}
@@ -201,7 +201,7 @@ export default async function MatchDetailPage({ params }: MatchDetailProps) {
               )}
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className="flex flex-col gap-4">
             <PlayerRow
               player={player3}
               eloChange={eloChanges?.player_3}
@@ -243,7 +243,7 @@ function PlayerRow({ player, eloChange, won }: PlayerRowProps) {
   const playerId = player.id
 
   const content = (
-    <div className={`flex items-center gap-3 rounded-lg bg-muted/50 p-3 ${!player.is_ghost && player.profile_id ? 'cursor-pointer transition-colors hover:bg-muted' : ''}`}>
+    <div className="flex items-center gap-3 rounded-lg bg-muted/50 p-3 cursor-pointer transition-colors hover:bg-muted">
       <PlayerAvatar
         name={player.display_name}
         avatarUrl={avatarUrl}
@@ -288,15 +288,10 @@ function PlayerRow({ player, eloChange, won }: PlayerRowProps) {
     </div>
   )
 
-  // Only make clickable if player is not a ghost (has profile_id)
-  if (!player.is_ghost && player.profile_id) {
-    return (
-      <Link href={`/player/${playerId}`}>
-        {content}
-      </Link>
-    )
-  }
-
-  return content
+  return (
+    <Link href={`/player/${playerId}`} className="block">
+      {content}
+    </Link>
+  )
 }
 

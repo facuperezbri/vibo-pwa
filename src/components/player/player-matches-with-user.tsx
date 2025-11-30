@@ -1,16 +1,16 @@
 'use client'
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { PlayerAvatar } from '@/components/ui/player-avatar'
 import { createClient } from '@/lib/supabase/client'
 import { useEffect, useState } from 'react'
-import { Trophy, Calendar, Loader2, TrendingUp, TrendingDown } from 'lucide-react'
+import { Trophy, Calendar, TrendingUp, TrendingDown } from 'lucide-react'
 import Link from 'next/link'
 import type { Match, Player } from '@/types/database'
 import { Skeleton } from '@/components/ui/skeleton'
 
-interface PlayerRecentMatchesProps {
-  playerId: string
+interface PlayerMatchesWithUserProps {
+  targetPlayerId: string
+  currentUserPlayerId: string
 }
 
 interface MatchWithPlayers extends Match {
@@ -20,7 +20,7 @@ interface MatchWithPlayers extends Match {
   player_4: Player & { avatar_url?: string | null }
 }
 
-export function PlayerRecentMatches({ playerId }: PlayerRecentMatchesProps) {
+export function PlayerMatchesWithUser({ targetPlayerId, currentUserPlayerId }: PlayerMatchesWithUserProps) {
   const [matches, setMatches] = useState<MatchWithPlayers[]>([])
   const [loading, setLoading] = useState(true)
   const supabase = createClient()
@@ -29,8 +29,8 @@ export function PlayerRecentMatches({ playerId }: PlayerRecentMatchesProps) {
     async function loadMatches() {
       setLoading(true)
 
-      // Get matches where player participated
-      const orConditions = `player_1_id.eq.${playerId},player_2_id.eq.${playerId},player_3_id.eq.${playerId},player_4_id.eq.${playerId}`
+      // Get matches where target player participated
+      const orConditions = `player_1_id.eq.${targetPlayerId},player_2_id.eq.${targetPlayerId},player_3_id.eq.${targetPlayerId},player_4_id.eq.${targetPlayerId}`
       
       const { data: matchesData } = await supabase
         .from('matches')
@@ -43,12 +43,23 @@ export function PlayerRecentMatches({ playerId }: PlayerRecentMatchesProps) {
         `)
         .or(orConditions)
         .order('match_date', { ascending: false })
-        .limit(10)
+        .limit(50)
 
-      if (matchesData) {
+      // Filter matches where both players participated together
+      const filteredMatches = matchesData?.filter(match => {
+        const playerIds = [
+          match.player_1_id,
+          match.player_2_id,
+          match.player_3_id,
+          match.player_4_id
+        ]
+        return playerIds.includes(targetPlayerId) && playerIds.includes(currentUserPlayerId)
+      }) || []
+
+      if (filteredMatches.length > 0) {
         // Get avatars for all players
         const profileIds = new Set<string>()
-        matchesData.forEach(match => {
+        filteredMatches.forEach(match => {
           const players = [match.player_1, match.player_2, match.player_3, match.player_4] as any[]
           players.forEach(player => {
             if (player?.profile_id && !player.is_ghost) {
@@ -76,7 +87,7 @@ export function PlayerRecentMatches({ playerId }: PlayerRecentMatchesProps) {
           return avatarsMap[player.profile_id] || null
         }
 
-        const matchesWithAvatars = matchesData.map(match => ({
+        const matchesWithAvatars = filteredMatches.map(match => ({
           ...match,
           player_1: { ...match.player_1, avatar_url: getAvatarUrl(match.player_1) },
           player_2: { ...match.player_2, avatar_url: getAvatarUrl(match.player_2) },
@@ -85,19 +96,21 @@ export function PlayerRecentMatches({ playerId }: PlayerRecentMatchesProps) {
         })) as MatchWithPlayers[]
 
         setMatches(matchesWithAvatars)
+      } else {
+        setMatches([])
       }
 
       setLoading(false)
     }
 
     loadMatches()
-  }, [playerId, supabase])
+  }, [targetPlayerId, currentUserPlayerId, supabase])
 
   if (loading) {
     return (
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-base">Últimos Partidos</CardTitle>
+          <CardTitle className="text-base">Partidos Juntos</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
@@ -114,11 +127,11 @@ export function PlayerRecentMatches({ playerId }: PlayerRecentMatchesProps) {
     return (
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-base">Últimos Partidos</CardTitle>
+          <CardTitle className="text-base">Partidos Juntos</CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground">
-            Aún no hay partidos registrados.
+            Aún no han jugado partidos juntos.
           </p>
         </CardContent>
       </Card>
@@ -129,9 +142,9 @@ export function PlayerRecentMatches({ playerId }: PlayerRecentMatchesProps) {
     <Card>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-base">Últimos Partidos</CardTitle>
+          <CardTitle className="text-base">Partidos Juntos</CardTitle>
           <Link
-            href={`/player/${playerId}/matches`}
+            href={`/player/${targetPlayerId}/matches-with/${currentUserPlayerId}`}
             className="text-sm text-primary hover:underline"
           >
             Ver todos
@@ -140,22 +153,28 @@ export function PlayerRecentMatches({ playerId }: PlayerRecentMatchesProps) {
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         {matches.map((match) => {
-          // Determine player's team and if they won
-          const playerPosition = 
-            match.player_1_id === playerId ? 1 :
-            match.player_2_id === playerId ? 2 :
-            match.player_3_id === playerId ? 3 : 4
+          // Determine if players were teammates or opponents
+          const targetPosition = 
+            match.player_1_id === targetPlayerId ? 1 :
+            match.player_2_id === targetPlayerId ? 2 :
+            match.player_3_id === targetPlayerId ? 3 : 4
           
-          const playerTeam = playerPosition <= 2 ? 1 : 2
-          const won = match.winner_team === playerTeam
+          const userPosition = 
+            match.player_1_id === currentUserPlayerId ? 1 :
+            match.player_2_id === currentUserPlayerId ? 2 :
+            match.player_3_id === currentUserPlayerId ? 3 : 4
 
-          // Get teammate
-          const teammate = playerPosition === 1 ? match.player_2 :
-                          playerPosition === 2 ? match.player_1 :
-                          playerPosition === 3 ? match.player_4 : match.player_3
+          const targetTeam = targetPosition <= 2 ? 1 : 2
+          const userTeam = userPosition <= 2 ? 1 : 2
+          const wereTeammates = targetTeam === userTeam
+          const targetWon = match.winner_team === targetTeam
 
-          // Get opponents
-          const opponents = playerTeam === 1 
+          // Get teammate and opponents
+          const teammate = targetPosition === 1 ? match.player_2 :
+                          targetPosition === 2 ? match.player_1 :
+                          targetPosition === 3 ? match.player_4 : match.player_3
+          
+          const opponents = targetTeam === 1 
             ? [match.player_3, match.player_4]
             : [match.player_1, match.player_2]
 
@@ -163,9 +182,9 @@ export function PlayerRecentMatches({ playerId }: PlayerRecentMatchesProps) {
             <Link key={match.id} href={`/matches/${match.id}`} className="block">
               <div className="flex items-center gap-3 rounded-lg bg-muted/50 p-3 transition-colors hover:bg-muted">
                 <div className={`flex h-10 w-10 items-center justify-center rounded-full ${
-                  won ? 'bg-green-500/20 text-green-500' : 'bg-red-500/20 text-red-500'
+                  targetWon ? 'bg-green-500/20 text-green-500' : 'bg-red-500/20 text-red-500'
                 }`}>
-                  {won ? (
+                  {targetWon ? (
                     <Trophy className="h-5 w-5" />
                   ) : (
                     <TrendingDown className="h-5 w-5" />
@@ -174,17 +193,29 @@ export function PlayerRecentMatches({ playerId }: PlayerRecentMatchesProps) {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="text-sm font-medium">
-                      {won ? 'Victoria' : 'Derrota'}
+                      {targetWon ? 'Victoria' : 'Derrota'}
                     </span>
                     <span className="text-xs text-muted-foreground">vs</span>
-                    <div className="flex items-center gap-1">
-                      {opponents.map((opponent, idx) => (
-                        <span key={opponent.id} className="text-xs text-muted-foreground">
-                          {opponent.display_name}
-                          {idx < opponents.length - 1 && ', '}
+                    {wereTeammates ? (
+                      <div className="flex items-center gap-1">
+                        {opponents.map((opponent, idx) => (
+                          <span key={opponent.id} className="text-xs text-muted-foreground">
+                            {opponent.display_name}
+                            {idx < opponents.length - 1 && ', '}
+                          </span>
+                        ))}
+                      </div>
+                    ) : (
+                      <>
+                        <span className="text-xs text-muted-foreground">
+                          Tú
                         </span>
-                      ))}
-                    </div>
+                        <span className="text-xs text-muted-foreground">y</span>
+                        <span className="text-xs text-muted-foreground">
+                          {opponents.find(o => o.id !== currentUserPlayerId)?.display_name}
+                        </span>
+                      </>
+                    )}
                   </div>
                   <div className="flex items-center gap-2 mt-1">
                     <Calendar className="h-3 w-3 text-muted-foreground" />

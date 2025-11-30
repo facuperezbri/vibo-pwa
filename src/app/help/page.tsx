@@ -115,7 +115,7 @@ export default function HelpPage() {
             <div className="rounded-lg bg-primary/10 border border-primary/20 p-3">
               <p className="text-sm font-medium mb-2">💡 Calibración rápida para nuevos</p>
               <p className="text-sm text-muted-foreground">
-                Los primeros 10 partidos valen el doble de puntos. Esto ayuda a que tu ELO se ajuste más rápido a tu nivel real de juego. Verás un badge "Nuevo" junto a tu nombre durante estos primeros partidos.
+                Los primeros 10 partidos valen el doble de puntos. Esto ayuda a que tu ELO se ajuste más rápido a tu nivel real de juego. Verás un badge &quot;Nuevo&quot; junto a tu nombre durante estos primeros partidos.
               </p>
             </div>
           </CardContent>
@@ -183,7 +183,7 @@ export default function HelpPage() {
             <p>• Tu categoría se actualiza automáticamente cuando tu ELO cambia</p>
             <p>• Cada jugador se evalúa individualmente contra el promedio del equipo contrario</p>
             <p>• El sistema guarda el historial de cambios de ELO en cada partido</p>
-            <p>• El badge "Nuevo" aparece durante tus primeros 10 partidos</p>
+            <p>• El badge &quot;Nuevo&quot; aparece durante tus primeros 10 partidos</p>
           </CardContent>
         </Card>
       </div>

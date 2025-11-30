@@ -190,7 +190,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       matchesChannel.unsubscribe()
       rankingChannel.unsubscribe()
     }
-  }, [loadStats])
+  }, [loadStats, supabase])
 
   return (
     <DataContext.Provider value={{ stats, refreshStats: loadStats }}>

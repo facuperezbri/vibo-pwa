@@ -332,6 +332,13 @@ export interface Database {
         Args: { target_player_id: string };
         Returns: PartnerStats[];
       };
+      get_head_to_head_stats: {
+        Args: {
+          player_a_id: string;
+          player_b_id: string;
+        };
+        Returns: HeadToHeadStats;
+      };
     };
     Enums: {
       player_category: PlayerCategory;
@@ -388,6 +395,16 @@ export interface PartnerStats {
   win_rate: number;
   last_match_date: string | null;
   current_streak: number;
+}
+
+export interface HeadToHeadStats {
+  total_matches: number;
+  player_a_wins: number;
+  player_b_wins: number;
+  last_match_date: string | null;
+  first_match_date: string | null;
+  current_streak: number; // Positive = Player A winning streak, Negative = Player B winning streak
+  error?: string;
 }
 
 // Convenience types

@@ -1,3 +1,4 @@
+import { HeadToHeadRivalry } from "@/components/home/head-to-head-rivalry";
 import { HomeRefresh } from "@/components/home/home-refresh";
 import { PartnerChemistry } from "@/components/home/partner-chemistry";
 import { ProfileSummary } from "@/components/home/profile-summary";
@@ -29,6 +30,7 @@ export default async function HomePage() {
         <ProfileSummary />
         <StatsGrid />
         <PartnerChemistry />
+        <HeadToHeadRivalry />
         <RecentMatches />
 
         {/* Quick Action */}

@@ -19,13 +19,13 @@ export function PadelBallLoader({ className, size = "md" }: PadelBallLoaderProps
       <style jsx global>{`
         @keyframes padel-bounce {
           0% {
-            transform: translateY(-45px) scale(0.92);
+            transform: translateY(-45px) translateX(0) rotate(0deg) scale(0.92);
           }
           50% {
-            transform: translateY(0) scale(1);
+            transform: translateY(0) translateX(8px) rotate(180deg) scale(1);
           }
           100% {
-            transform: translateY(-45px) scale(0.92);
+            transform: translateY(-45px) translateX(0) rotate(360deg) scale(0.92);
           }
         }
         .padel-ball-animation {
@@ -67,13 +67,6 @@ export function PadelBallLoader({ className, size = "md" }: PadelBallLoaderProps
                       C1476.93,1433.801,1395.288,1500.142,1308.505,1530.371z"
                   />
                 </g>
-                <ellipse
-                  style={{ fill: "#D6D6D6" }}
-                  cx="1100"
-                  cy="1946.19"
-                  rx="595.323"
-                  ry="24.552"
-                />
               </g>
             </g>
           </svg>

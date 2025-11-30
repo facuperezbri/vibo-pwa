@@ -8,29 +8,29 @@ export default function HelpPage() {
       <Header title="Ayuda" showBack />
       <div className="space-y-6 p-4 pb-8">
         <div className="space-y-2">
-          <h2 className="text-2xl font-bold">Sistema de Puntuación ELO</h2>
+          <h2 className="text-2xl font-bold">Sistema de Puntuación</h2>
           <p className="text-muted-foreground">
             Entendé cómo funciona el sistema de puntuación y cómo se calcula tu ranking.
           </p>
         </div>
 
-        {/* Qué es ELO */}
+        {/* Qué es el puntaje */}
         <Card>
           <CardHeader>
             <div className="flex items-center gap-2">
               <HelpCircle className="h-5 w-5 text-primary" />
-              <CardTitle>¿Qué es el ELO?</CardTitle>
+              <CardTitle>¿Qué es el puntaje?</CardTitle>
             </div>
             <CardDescription>
-              El ELO es un sistema de puntuación que refleja tu nivel de juego
+              El puntaje es un número que refleja tu nivel de juego
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             <p>
-              El ELO es un número que representa tu habilidad en el pádel. Cuanto más alto sea tu ELO, mejor es tu nivel de juego.
+              Tu puntaje es un número que representa tu habilidad en el pádel. Cuanto más alto sea tu puntaje, mejor es tu nivel de juego.
             </p>
             <div className="rounded-lg bg-muted p-3">
-              <p className="text-sm font-medium mb-2">Rangos de ELO por categoría:</p>
+              <p className="text-sm font-medium mb-2">Rangos de puntaje por categoría:</p>
               <ul className="text-sm space-y-1 text-muted-foreground">
                 <li>• <strong className="text-foreground">8va:</strong> menos de 1100 puntos</li>
                 <li>• <strong className="text-foreground">7ma:</strong> 1100 - 1299 puntos</li>
@@ -53,12 +53,12 @@ export default function HelpPage() {
               <CardTitle>Puntuación Inicial</CardTitle>
             </div>
             <CardDescription>
-              Tu ELO inicial depende de la categoría que elijas al registrarte
+              Tu puntaje inicial depende de la categoría que elijas al registrarte
             </CardDescription>
           </CardHeader>
           <CardContent>
             <p className="mb-3">
-              Cuando te registrás, elegís tu categoría inicial. Cada categoría tiene un ELO de partida:
+              Cuando te registrás, elegís tu categoría inicial. Cada categoría tiene un puntaje de partida:
             </p>
             <div className="rounded-lg bg-muted p-3 space-y-1 text-sm">
               <p>• 8va: 1000 puntos</p>
@@ -81,26 +81,26 @@ export default function HelpPage() {
               <CardTitle>¿Cómo se calcula después de cada partido?</CardTitle>
             </div>
             <CardDescription>
-              Tu ELO cambia después de cada partido según el resultado
+              Tu puntaje cambia después de cada partido según el resultado
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <p className="font-medium mb-2">1. Se calcula el promedio de ELO de cada equipo</p>
+              <p className="font-medium mb-2">1. Se calcula el promedio de puntaje de cada equipo</p>
               <p className="text-sm text-muted-foreground">
-                El sistema promedia el ELO de los dos jugadores de cada equipo para determinar la fuerza del equipo.
+                El sistema promedia el puntaje de los dos jugadores de cada equipo para determinar la fuerza del equipo.
               </p>
             </div>
             
             <div>
               <p className="font-medium mb-2">2. Se calcula tu probabilidad de ganar</p>
               <p className="text-sm text-muted-foreground">
-                Basándose en la diferencia de ELO entre tu equipo y el equipo contrario, el sistema calcula qué tan probable era que ganaras.
+                Basándose en la diferencia de puntaje entre tu equipo y el equipo contrario, el sistema calcula qué tan probable era que ganaras.
               </p>
             </div>
 
             <div>
-              <p className="font-medium mb-2">3. Se ajusta tu ELO según el resultado</p>
+              <p className="font-medium mb-2">3. Se ajusta tu puntaje según el resultado</p>
               <p className="text-sm text-muted-foreground mb-2">
                 Si ganás cuando se esperaba que ganaras → ganás pocos puntos
               </p>
@@ -115,7 +115,7 @@ export default function HelpPage() {
             <div className="rounded-lg bg-primary/10 border border-primary/20 p-3">
               <p className="text-sm font-medium mb-2">💡 Calibración rápida para nuevos</p>
               <p className="text-sm text-muted-foreground">
-                Los primeros 10 partidos valen el doble de puntos. Esto ayuda a que tu ELO se ajuste más rápido a tu nivel real de juego. Verás un badge &quot;Nuevo&quot; junto a tu nombre durante estos primeros partidos.
+                Los primeros 10 partidos valen el doble de puntos. Esto ayuda a que tu puntaje se ajuste más rápido a tu nivel real de juego. Verás un badge &quot;Nuevo&quot; junto a tu nombre durante estos primeros partidos.
               </p>
             </div>
           </CardContent>
@@ -136,8 +136,8 @@ export default function HelpPage() {
             <div>
               <p className="font-medium mb-2">Escenario:</p>
               <ul className="text-sm space-y-1 text-muted-foreground">
-                <li>• Tu equipo: ELO promedio 1500</li>
-                <li>• Equipo contrario: ELO promedio 1400</li>
+                <li>• Tu equipo: puntaje promedio 1500</li>
+                <li>• Equipo contrario: puntaje promedio 1400</li>
                 <li>• Tu equipo tiene 64% de probabilidad de ganar</li>
               </ul>
             </div>
@@ -179,10 +179,10 @@ export default function HelpPage() {
             </div>
           </CardHeader>
           <CardContent className="space-y-2 text-sm">
-            <p>• El ELO mínimo es 100 puntos (no puede bajar más)</p>
-            <p>• Tu categoría se actualiza automáticamente cuando tu ELO cambia</p>
+            <p>• El puntaje mínimo es 100 puntos (no puede bajar más)</p>
+            <p>• Tu categoría se actualiza automáticamente cuando tu puntaje cambia</p>
             <p>• Cada jugador se evalúa individualmente contra el promedio del equipo contrario</p>
-            <p>• El sistema guarda el historial de cambios de ELO en cada partido</p>
+            <p>• El sistema guarda el historial de cambios de puntaje en cada partido</p>
             <p>• El badge &quot;Nuevo&quot; aparece durante tus primeros 10 partidos</p>
           </CardContent>
         </Card>

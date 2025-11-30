@@ -39,18 +39,57 @@ export async function updateSession(request: NextRequest) {
   const publicRoutes = ['/login', '/signup', '/auth/callback', '/auth/confirm', '/invite']
   const isPublicRoute = publicRoutes.some(route => request.nextUrl.pathname.startsWith(route))
 
+  // Define routes that don't require complete profile
+  const incompleteProfileAllowedRoutes = ['/complete-profile', '/help']
+  const isIncompleteProfileAllowed = incompleteProfileAllowedRoutes.some(route => request.nextUrl.pathname.startsWith(route))
+
   if (!user && !isPublicRoute) {
     // No user, redirect to login page
     const url = request.nextUrl.clone()
     url.pathname = '/login'
-    return NextResponse.redirect(url)
+    const redirectResponse = NextResponse.redirect(url)
+    // Copy cookies from supabaseResponse
+    redirectResponse.cookies.setAll(supabaseResponse.cookies.getAll())
+    return redirectResponse
   }
 
   if (user && (request.nextUrl.pathname === '/login' || request.nextUrl.pathname === '/signup')) {
     // User is logged in but trying to access auth pages, redirect to home
     const url = request.nextUrl.clone()
     url.pathname = '/'
-    return NextResponse.redirect(url)
+    const redirectResponse = NextResponse.redirect(url)
+    // Copy cookies from supabaseResponse
+    redirectResponse.cookies.setAll(supabaseResponse.cookies.getAll())
+    return redirectResponse
+  }
+
+  // Check if profile is complete for authenticated users accessing protected routes
+  if (user && !isPublicRoute && !isIncompleteProfileAllowed) {
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('category_label, country, province, email, phone, gender')
+      .eq('id', user.id)
+      .single()
+
+    // If profile doesn't exist or is incomplete, redirect to complete-profile
+    const isProfileComplete = profile && 
+      !profileError &&
+      profile.category_label &&
+      profile.country &&
+      profile.province &&
+      (profile.email || user.email) &&
+      profile.phone &&
+      profile.gender
+
+    if (!isProfileComplete) {
+      // Profile doesn't exist or is incomplete, redirect to complete-profile
+      const url = request.nextUrl.clone()
+      url.pathname = '/complete-profile'
+      const redirectResponse = NextResponse.redirect(url)
+      // Copy cookies from supabaseResponse
+      redirectResponse.cookies.setAll(supabaseResponse.cookies.getAll())
+      return redirectResponse
+    }
   }
 
   // IMPORTANT: You *must* return the supabaseResponse object as it is. If you're

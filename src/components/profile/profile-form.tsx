@@ -23,9 +23,12 @@ import { EloBadge } from '@/components/ui/elo-badge'
 import { AvatarUpload } from '@/components/profile/avatar-upload'
 import { PushNotificationSettings } from '@/components/notifications/push-notification-settings'
 import { Separator } from '@/components/ui/separator'
-import { LogOut } from 'lucide-react'
+import { LogOut, Mail, Phone, Globe, MapPin, Users } from 'lucide-react'
 import { useEditMode } from './profile-edit-button-wrapper'
 import { ClaimGhostPlayers } from './claim-ghost-players'
+import { getCountries, getProvincesByCountry, getCountryName } from '@/lib/countries'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { useEffect } from 'react'
 import type { Profile, Player } from '@/types/database'
 
 interface ProfileFormProps {
@@ -40,13 +43,55 @@ export function ProfileForm({ initialProfile, initialGhostPlayers }: ProfileForm
   const { editMode, setEditMode } = useEditMode()
   const [formData, setFormData] = useState({ 
     fullName: initialProfile.full_name || '', 
-    username: initialProfile.username || '' 
+    username: initialProfile.username || '',
+    email: initialProfile.email || '',
+    phone: initialProfile.phone || '',
+    country: initialProfile.country || '',
+    province: initialProfile.province || '',
+    gender: initialProfile.gender || '',
   })
+  const [availableProvinces, setAvailableProvinces] = useState<Array<{ code: string; name: string }>>([])
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState<string | null>(null)
   
   const router = useRouter()
   const supabase = createClient()
+  const countries = getCountries()
+
+  // Update formData when initialProfile changes
+  useEffect(() => {
+    setProfile(initialProfile)
+    setFormData({
+      fullName: initialProfile.full_name || '',
+      username: initialProfile.username || '',
+      email: initialProfile.email || '',
+      phone: initialProfile.phone || '',
+      country: initialProfile.country || '',
+      province: initialProfile.province || '',
+      gender: initialProfile.gender || '',
+    })
+  }, [initialProfile])
+
+  useEffect(() => {
+    if (formData.country) {
+      const provinces = getProvincesByCountry(formData.country)
+      setAvailableProvinces(provinces)
+      // Reset province if country changes and current province is not valid
+      if (
+        formData.province &&
+        !provinces.find(
+          (p) => p.code === formData.province || p.name === formData.province
+        )
+      ) {
+        setFormData((prev) => ({ ...prev, province: '' }))
+      }
+    } else {
+      setAvailableProvinces([])
+      if (formData.province) {
+        setFormData((prev) => ({ ...prev, province: '' }))
+      }
+    }
+  }, [formData.country])
 
   async function handleSaveProfile() {
     setSaving(true)
@@ -60,6 +105,11 @@ export function ProfileForm({ initialProfile, initialGhostPlayers }: ProfileForm
       .update({
         full_name: formData.fullName,
         username: normalizedUsername,
+        email: formData.email || null,
+        phone: formData.phone || null,
+        country: formData.country || null,
+        province: formData.province || null,
+        gender: formData.gender || null,
       })
       .eq('id', profile.id)
 
@@ -75,7 +125,16 @@ export function ProfileForm({ initialProfile, initialGhostPlayers }: ProfileForm
       .update({ display_name: formData.fullName || normalizedUsername })
       .eq('profile_id', profile.id)
 
-    setProfile({ ...profile, full_name: formData.fullName, username: normalizedUsername })
+    setProfile({ 
+      ...profile, 
+      full_name: formData.fullName, 
+      username: normalizedUsername,
+      email: formData.email || null,
+      phone: formData.phone || null,
+      country: formData.country || null,
+      province: formData.province || null,
+      gender: formData.gender || null,
+    })
     setEditMode(false)
     setSuccess(true)
     setSaving(false)
@@ -163,14 +222,6 @@ export function ProfileForm({ initialProfile, initialGhostPlayers }: ProfileForm
                       })}
                     />
                   </div>
-                  <Button
-                    className="w-full"
-                    onClick={handleSaveProfile}
-                    disabled={saving}
-                  >
-                    {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Guardar Cambios
-                  </Button>
                 </div>
               ) : (
                 <>
@@ -190,6 +241,164 @@ export function ProfileForm({ initialProfile, initialGhostPlayers }: ProfileForm
                 </>
               )}
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Personal Information */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">Información Personal</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {editMode ? (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="tu@email.com"
+                      value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      className="pl-10"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="phone">Teléfono</Label>
+                  <div className="relative">
+                    <Phone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <Input
+                      id="phone"
+                      type="tel"
+                      placeholder="+54 9 11 1234-5678"
+                      value={formData.phone}
+                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                      className="pl-10"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="country">País</Label>
+                  <div className="relative">
+                    <Globe className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground z-10" />
+                    <Select
+                      value={formData.country}
+                      onValueChange={(value) => setFormData({ ...formData, country: value })}
+                    >
+                      <SelectTrigger className="pl-10">
+                        <SelectValue placeholder="Selecciona tu país" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {countries.map((country) => (
+                          <SelectItem key={country.code} value={country.code}>
+                            {country.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                {formData.country && availableProvinces.length > 0 && (
+                  <div className="space-y-2">
+                    <Label htmlFor="province">Provincia</Label>
+                    <div className="relative">
+                      <MapPin className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground z-10" />
+                      <Select
+                        value={formData.province}
+                        onValueChange={(value) => setFormData({ ...formData, province: value })}
+                      >
+                        <SelectTrigger className="pl-10">
+                          <SelectValue placeholder="Selecciona tu provincia" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {availableProvinces.map((province) => (
+                            <SelectItem key={province.code} value={province.name}>
+                              {province.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                )}
+
+                <div className="space-y-2">
+                  <Label htmlFor="gender">Género</Label>
+                  <div className="relative">
+                    <Users className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground z-10" />
+                    <Select
+                      value={formData.gender}
+                      onValueChange={(value) => setFormData({ ...formData, gender: value })}
+                    >
+                      <SelectTrigger className="pl-10">
+                        <SelectValue placeholder="Selecciona tu género" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Masculino">Masculino</SelectItem>
+                        <SelectItem value="Femenino">Femenino</SelectItem>
+                        <SelectItem value="Otro">Otro</SelectItem>
+                        <SelectItem value="Prefiero no decir">Prefiero no decir</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <Button
+                  className="w-full mt-4"
+                  onClick={handleSaveProfile}
+                  disabled={saving}
+                >
+                  {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  Guardar Cambios
+                </Button>
+              </>
+            ) : (
+              <div className="space-y-3">
+                {profile.email && (
+                  <div className="flex items-center gap-3 text-sm">
+                    <Mail className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-muted-foreground">Email:</span>
+                    <span className="font-medium">{profile.email}</span>
+                  </div>
+                )}
+                {profile.phone && (
+                  <div className="flex items-center gap-3 text-sm">
+                    <Phone className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-muted-foreground">Teléfono:</span>
+                    <span className="font-medium">{profile.phone}</span>
+                  </div>
+                )}
+                {profile.country && (
+                  <div className="flex items-center gap-3 text-sm">
+                    <Globe className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-muted-foreground">País:</span>
+                    <span className="font-medium">{getCountryName(profile.country) || profile.country}</span>
+                  </div>
+                )}
+                {profile.province && (
+                  <div className="flex items-center gap-3 text-sm">
+                    <MapPin className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-muted-foreground">Provincia:</span>
+                    <span className="font-medium">{profile.province}</span>
+                  </div>
+                )}
+                {profile.gender && (
+                  <div className="flex items-center gap-3 text-sm">
+                    <Users className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-muted-foreground">Género:</span>
+                    <span className="font-medium">{profile.gender}</span>
+                  </div>
+                )}
+                {!profile.email && !profile.phone && !profile.country && !profile.province && !profile.gender && (
+                  <p className="text-sm text-muted-foreground">No hay información personal disponible</p>
+                )}
+              </div>
+            )}
           </CardContent>
         </Card>
 

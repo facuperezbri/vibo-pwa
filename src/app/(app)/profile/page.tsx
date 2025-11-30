@@ -33,7 +33,7 @@ export default function ProfilePage() {
     // Load profile data from client (no server round-trip)
     const { data: profileData } = await supabase
       .from("profiles")
-      .select("id, full_name, username, avatar_url, elo_score, category_label")
+      .select("id, full_name, username, avatar_url, elo_score, category_label, country, province, phone, email, gender")
       .eq("id", user.id)
       .single();
 

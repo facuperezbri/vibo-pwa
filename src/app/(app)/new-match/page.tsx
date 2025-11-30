@@ -1175,6 +1175,7 @@ export default function NewMatchPage() {
 
         {/* Submit Button */}
         <Button
+          variant="secondary"
           className="w-full py-6 text-lg"
           onClick={handleSubmit}
           disabled={

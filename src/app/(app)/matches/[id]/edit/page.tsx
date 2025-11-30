@@ -773,6 +773,7 @@ export default function EditMatchPage({ params }: EditMatchPageProps) {
           </Dialog>
 
           <Button
+            variant="secondary"
             className="flex-1"
             onClick={handleSave}
             disabled={

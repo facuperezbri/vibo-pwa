@@ -46,7 +46,7 @@ function MatchesListContent() {
         </p>
         <Link
           href="/new-match"
-          className="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 font-medium text-primary-foreground"
+          className="inline-flex items-center gap-2 rounded-lg bg-secondary px-6 py-3 font-medium text-secondary-foreground"
         >
           Registrar Partido
         </Link>

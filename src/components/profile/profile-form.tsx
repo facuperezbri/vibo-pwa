@@ -404,6 +404,7 @@ export function ProfileForm({
                   </div>
                 </div>
                 <Button
+                  variant="secondary"
                   className="w-full mt-4"
                   onClick={handleSaveProfile}
                   disabled={saving}
@@ -547,8 +548,8 @@ export function ProfileForm({
 
         {/* Logout */}
         <Button
-          variant="outline"
-          className="w-full gap-2 text-destructive hover:bg-destructive hover:text-destructive-foreground"
+          variant="destructive"
+          className="w-full gap-2"
           onClick={handleLogout}
         >
           <LogOut className="h-4 w-4" />

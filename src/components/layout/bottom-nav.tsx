@@ -70,8 +70,8 @@ export function BottomNav() {
                 onClick={() => handleNavigation(item.href)}
                 className="group relative -mt-6 flex flex-col items-center touch-target"
               >
-                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary border-2 border-background shadow-lg shadow-primary/25 transition-transform group-active:scale-95">
-                  <Icon className="h-6 w-6 text-primary-foreground" />
+                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-secondary border-2 border-background shadow-lg shadow-secondary/25 transition-transform group-active:scale-95">
+                  <Icon className="h-6 w-6 text-secondary-foreground" />
                 </div>
                 <span className="mt-1 text-[10px] font-medium text-muted-foreground">
                   {item.label}
@@ -86,7 +86,7 @@ export function BottomNav() {
               onClick={() => handleNavigation(item.href)}
               className={cn(
                 "touch-target flex flex-col items-center justify-center gap-1 px-3 py-2 transition-colors",
-                isActive ? "text-primary" : "text-muted-foreground"
+                isActive ? "text-secondary" : "text-muted-foreground"
               )}
             >
               <Icon className={cn("h-5 w-5", isActive && "stroke-[2.5px]")} />

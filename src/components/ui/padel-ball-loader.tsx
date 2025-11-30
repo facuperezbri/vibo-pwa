@@ -19,13 +19,13 @@ export function PadelBallLoader({ className, size = "md" }: PadelBallLoaderProps
       <style jsx global>{`
         @keyframes padel-bounce {
           0% {
-            transform: translateY(0) scale(1);
-          }
-          50% {
             transform: translateY(-45px) scale(0.92);
           }
-          100% {
+          50% {
             transform: translateY(0) scale(1);
+          }
+          100% {
+            transform: translateY(-45px) scale(0.92);
           }
         }
         .padel-ball-animation {

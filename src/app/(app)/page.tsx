@@ -36,7 +36,7 @@ export default async function HomePage() {
         {/* Quick Action */}
         <Link
           href="/new-match"
-          className="flex items-center justify-center gap-2 rounded-xl bg-primary py-4 font-semibold text-primary-foreground transition-transform active:scale-[0.98]"
+          className="flex items-center justify-center gap-2 rounded-xl bg-secondary py-4 font-semibold text-secondary-foreground transition-transform active:scale-[0.98]"
         >
           <Swords className="h-5 w-5" />
           Registrar Nuevo Partido

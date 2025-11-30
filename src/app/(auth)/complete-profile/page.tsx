@@ -1,5 +1,6 @@
 "use client";
 
+import { ClaimGhostPlayers } from "@/components/profile/claim-ghost-players";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -118,9 +119,16 @@ export default function CompleteProfilePage() {
     setHasOAuthEmail(!!oauthEmail);
     setHasOAuthPhone(!!oauthPhone);
 
-    // Normalize username from OAuth metadata to lowercase
+    // Extract username from email if available (part before @)
+    let defaultUsername = "";
+    if (oauthEmail) {
+      const emailUsername = oauthEmail.split("@")[0];
+      defaultUsername = emailUsername.toLowerCase().replace(/[^a-z0-9_]/g, "");
+    }
+
+    // Normalize username from OAuth metadata to lowercase, or use email username
     const oauthUsername =
-      metadata.username || metadata.preferred_username || "";
+      metadata.username || metadata.preferred_username || defaultUsername;
     const normalizedOAuthUsername = oauthUsername
       ? oauthUsername.toLowerCase().replace(/[^a-z0-9_]/g, "")
       : "";
@@ -558,6 +566,15 @@ export default function CompleteProfilePage() {
                   </SelectContent>
                 </Select>
               </div>
+            </div>
+
+            <div className="space-y-2 pt-2">
+              <Label>Vincular partidos históricos</Label>
+              <p className="text-xs text-muted-foreground mb-2">
+                Si ya tenés partidos registrados como jugador invitado, podés
+                vincularlos a tu cuenta ahora.
+              </p>
+              <ClaimGhostPlayers />
             </div>
 
             <Button type="submit" className="w-full" disabled={saving}>

@@ -15,6 +15,7 @@ import {
 import { EloBadge } from "@/components/ui/elo-badge";
 import { Input } from "@/components/ui/input";
 import { createClient } from "@/lib/supabase/client";
+import { fuzzySearch } from "@/lib/utils";
 import type { PlayerCategory, SetScore } from "@/types/database";
 import {
   Calendar,
@@ -27,7 +28,7 @@ import {
   Trophy,
   X,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface GhostPlayerMatch {
   id: string;
@@ -59,7 +60,7 @@ export function ClaimGhostPlayers() {
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(false);
   const [claiming, setClaiming] = useState<string | null>(null);
-  const [results, setResults] = useState<ClaimableGhostPlayer[]>([]);
+  const [backendResults, setBackendResults] = useState<ClaimableGhostPlayer[]>([]);
   const [expandedPlayers, setExpandedPlayers] = useState<Set<string>>(
     new Set()
   );
@@ -69,23 +70,9 @@ export function ClaimGhostPlayers() {
 
   const supabase = createClient();
 
-  function toggleExpanded(playerId: string) {
-    setExpandedPlayers((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(playerId)) {
-        newSet.delete(playerId);
-      } else {
-        newSet.add(playerId);
-      }
-      return newSet;
-    });
-  }
-
-  async function handleSearch() {
-    if (!searchTerm.trim()) {
-      setResults([]);
-      return;
-    }
+  // Buscar en el backend cuando cambia el término de búsqueda
+  async function searchPlayers(searchText: string) {
+    if (!open) return;
 
     setLoading(true);
     setError(null);
@@ -100,10 +87,13 @@ export function ClaimGhostPlayers() {
       return;
     }
 
+    // Si no hay término de búsqueda, usar cadena vacía para obtener todos los disponibles
+    const searchQuery = searchText.trim() || "";
+
     const { data, error: searchError } = await supabase.rpc(
       "search_claimable_ghost_players_with_matches",
       {
-        p_search_name: searchTerm.trim(),
+        p_search_name: searchQuery,
         p_user_id: user.id,
       }
     );
@@ -111,11 +101,62 @@ export function ClaimGhostPlayers() {
     if (searchError) {
       setError("Error al buscar: " + searchError.message);
     } else {
-      setResults(data || []);
+      setBackendResults(data || []);
     }
 
     setLoading(false);
   }
+
+  // Cargar jugadores cuando se abre el diálogo o cambia el término de búsqueda
+  const handleOpenChange = (isOpen: boolean) => {
+    setOpen(isOpen);
+    if (isOpen) {
+      // Cargar resultados iniciales
+      searchPlayers("");
+    } else {
+      // Resetear búsqueda al cerrar
+      setSearchTerm("");
+      setBackendResults([]);
+    }
+  };
+
+  // Buscar cuando cambia el término de búsqueda (con debounce)
+  useEffect(() => {
+    if (!open) return;
+
+    const timeoutId = setTimeout(() => {
+      searchPlayers(searchTerm);
+    }, 300); // Debounce de 300ms
+
+    return () => clearTimeout(timeoutId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchTerm, open]);
+
+  function toggleExpanded(playerId: string) {
+    setExpandedPlayers((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(playerId)) {
+        newSet.delete(playerId);
+      } else {
+        newSet.add(playerId);
+      }
+      return newSet;
+    });
+  }
+
+  // Aplicar búsqueda difusa sobre los resultados del backend
+  const searchResults = fuzzySearch(
+    backendResults,
+    searchTerm,
+    (p) => p.display_name,
+    50
+  );
+
+  const results = searchResults.map((r) => r.item);
+  const hasExactMatches = searchResults.some(
+    (r) => r.matchType === "exact" || r.matchType === "starts-with"
+  );
+  const hasFuzzyMatches = searchResults.some((r) => r.matchType === "fuzzy");
 
   async function handleClaim(playerId: string) {
     const {
@@ -204,7 +245,7 @@ export function ClaimGhostPlayers() {
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <Button variant="outline" className="w-full">
           <Search className="mr-2 h-4 w-4" />
@@ -227,20 +268,17 @@ export function ClaimGhostPlayers() {
               placeholder="Buscar por nombre (ej: Juan Pérez)"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  handleSearch();
-                }
-              }}
             />
-            <Button onClick={handleSearch} disabled={loading}>
-              {loading ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Search className="h-4 w-4" />
-              )}
-            </Button>
           </div>
+
+          {loading && backendResults.length === 0 && (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="h-6 w-6 animate-spin text-primary" />
+              <span className="ml-2 text-sm text-muted-foreground">
+                Buscando jugadores...
+              </span>
+            </div>
+          )}
 
           {error && (
             <Alert variant="destructive">
@@ -254,9 +292,18 @@ export function ClaimGhostPlayers() {
             </Alert>
           )}
 
-          {results.length > 0 && (
-            <div className="space-y-3 max-h-[500px] overflow-y-auto">
-              {results.map((player) => {
+          {!loading && (
+            <>
+              {hasFuzzyMatches && !hasExactMatches && searchTerm.trim() && (
+                <div className="px-2 py-1 text-xs text-muted-foreground border-b">
+                  Mostrando sugerencias similares
+                </div>
+              )}
+              {results.length > 0 && (
+                <div className="space-y-3 max-h-[500px] overflow-y-auto">
+                  {results.map((player) => {
+                    const result = searchResults.find((r) => r.item.id === player.id);
+                    const isFuzzyMatch = result?.matchType === "fuzzy";
                 const isClaimed = claimedIds.has(player.id);
                 const isExpanded = expandedPlayers.has(player.id);
                 const matchInfo =
@@ -280,9 +327,14 @@ export function ClaimGhostPlayers() {
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
                             <div className="flex items-center gap-3 mb-2">
-                              <h3 className="font-semibold text-lg">
+                              <h3 className={`font-semibold text-lg ${isFuzzyMatch ? "opacity-90" : ""}`}>
                                 {player.display_name}
                               </h3>
+                              {isFuzzyMatch && (
+                                <span className="text-xs text-muted-foreground italic">
+                                  (similar)
+                                </span>
+                              )}
                               <EloBadge
                                 elo={player.elo_score}
                                 category={player.category_label}
@@ -492,10 +544,14 @@ export function ClaimGhostPlayers() {
             </div>
           )}
 
-          {results.length === 0 && searchTerm && !loading && (
-            <p className="text-center text-sm text-muted-foreground">
-              No se encontraron jugadores con ese nombre
-            </p>
+              {results.length === 0 && !loading && (
+                <p className="text-center text-sm text-muted-foreground">
+                  {searchTerm
+                    ? "No se encontraron jugadores con ese nombre"
+                    : "Escribí un nombre para buscar jugadores"}
+                </p>
+              )}
+            </>
           )}
         </div>
       </DialogContent>

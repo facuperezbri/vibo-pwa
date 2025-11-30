@@ -113,6 +113,7 @@ export function RankingContent({ rankings, currentUserId }: RankingContentProps)
               <RankingRow
                 key={player.id}
                 rank={index + 1}
+                profileId={player.id}
                 name={player.full_name || player.username || 'Usuario'}
                 avatarUrl={player.avatar_url}
                 elo={player.elo_score}
@@ -133,6 +134,7 @@ export function RankingContent({ rankings, currentUserId }: RankingContentProps)
               <RankingRow
                 key={player.id}
                 rank={index + 1}
+                profileId={player.id}
                 name={player.full_name || player.username || 'Usuario'}
                 avatarUrl={player.avatar_url}
                 elo={player.elo_score}

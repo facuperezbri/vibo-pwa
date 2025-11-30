@@ -2,9 +2,10 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { usePlayerMatches } from '@/lib/react-query/hooks'
-import { Trophy, Calendar, TrendingDown } from 'lucide-react'
+import { Calendar } from 'lucide-react'
 import Link from 'next/link'
 import { Skeleton } from '@/components/ui/skeleton'
+import { PlayerAvatar } from '@/components/ui/player-avatar'
 
 interface PlayerRecentMatchesProps {
   playerId: string
@@ -79,33 +80,42 @@ export function PlayerRecentMatches({ playerId }: PlayerRecentMatchesProps) {
             ? [match.player_3, match.player_4]
             : [match.player_1, match.player_2]
 
+          // Get team players
+          const teamPlayers = playerTeam === 1 
+            ? [match.player_1, match.player_2]
+            : [match.player_3, match.player_4]
+
           return (
             <Link key={match.id} href={`/matches/${match.id}`} className="block">
               <div className="flex items-center gap-3 rounded-lg bg-muted/50 p-3 transition-colors hover:bg-muted">
-                <div className={`flex h-10 w-10 items-center justify-center rounded-full ${
-                  won ? 'bg-green-500/20 text-green-500' : 'bg-red-500/20 text-red-500'
-                }`}>
-                  {won ? (
-                    <Trophy className="h-5 w-5" />
-                  ) : (
-                    <TrendingDown className="h-5 w-5" />
-                  )}
+                <div className="flex items-center gap-2">
+                  <div className={`flex -space-x-2 ${won ? 'ring-2 ring-green-500/50 rounded-full' : ''}`}>
+                    {teamPlayers.map((player) => (
+                      <PlayerAvatar
+                        key={player.id}
+                        name={player.display_name}
+                        avatarUrl={player.avatar_url}
+                        isGhost={player.is_ghost}
+                        size="sm"
+                        className="ring-2 ring-background"
+                      />
+                    ))}
+                  </div>
+                  <span className="text-xs text-muted-foreground">vs</span>
+                  <div className={`flex -space-x-2 ${!won ? 'ring-2 ring-red-500/50 rounded-full' : ''}`}>
+                    {opponents.map((opponent) => (
+                      <PlayerAvatar
+                        key={opponent.id}
+                        name={opponent.display_name}
+                        avatarUrl={opponent.avatar_url}
+                        isGhost={opponent.is_ghost}
+                        size="sm"
+                        className="ring-2 ring-background"
+                      />
+                    ))}
+                  </div>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-sm font-medium">
-                      {won ? 'Victoria' : 'Derrota'}
-                    </span>
-                    <span className="text-xs text-muted-foreground">vs</span>
-                    <div className="flex items-center gap-1">
-                      {opponents.map((opponent, idx) => (
-                        <span key={opponent.id} className="text-xs text-muted-foreground">
-                          {opponent.display_name}
-                          {idx < opponents.length - 1 && ', '}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
                   <div className="flex items-center gap-2 mt-1">
                     <Calendar className="h-3 w-3 text-muted-foreground" />
                     <span className="text-xs text-muted-foreground">

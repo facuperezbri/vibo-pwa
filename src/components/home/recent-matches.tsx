@@ -1,14 +1,22 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { PlayerAvatar } from "@/components/ui/player-avatar";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useData } from "@/contexts/data-context";
-import { TrendingDown, TrendingUp } from "lucide-react";
+import { useCurrentPlayer, usePlayerMatches } from "@/lib/react-query/hooks";
+import { TrendingDown, Trophy } from "lucide-react";
 import Link from "next/link";
 
 export function RecentMatches() {
   const { stats } = useData();
+  const { data: currentPlayerId } = useCurrentPlayer();
+  const { data: allMatches = [], isLoading: matchesLoading } = usePlayerMatches(
+    currentPlayerId,
+    5
+  );
 
-  if (stats.loading) {
+  if (stats.loading || matchesLoading) {
     return (
       <Card>
         <CardHeader className="pb-3">
@@ -19,19 +27,7 @@ export function RecentMatches() {
         </CardHeader>
         <CardContent className="space-y-2">
           {[1, 2, 3].map((i) => (
-            <div
-              key={i}
-              className="flex items-center justify-between rounded-lg bg-muted/50 p-3"
-            >
-              <div className="flex items-center gap-3">
-                <div className="h-8 w-8 rounded-full bg-muted animate-pulse" />
-                <div className="space-y-1">
-                  <div className="h-4 w-20 bg-muted rounded animate-pulse" />
-                  <div className="h-3 w-16 bg-muted rounded animate-pulse" />
-                </div>
-              </div>
-              <div className="h-4 w-12 bg-muted rounded animate-pulse" />
-            </div>
+            <Skeleton key={i} className="h-16 w-full" />
           ))}
         </CardContent>
       </Card>
@@ -52,18 +48,41 @@ export function RecentMatches() {
         </div>
       </CardHeader>
       <CardContent className="space-y-2">
-        {stats.recentMatches.length === 0 ? (
+        {allMatches.length === 0 ? (
           <p className="py-4 text-center text-sm text-muted-foreground">
             Aún no has jugado ningún partido
           </p>
         ) : (
-          stats.recentMatches.map((match) => {
-            const position = match.player_position || 0;
-            const isTeam1 = position <= 2;
-            const won =
-              (isTeam1 && match.winner_team === 1) ||
-              (!isTeam1 && match.winner_team === 2);
-            const eloKey = `player_${position}` as const;
+          allMatches.map((match) => {
+            if (!currentPlayerId) return null;
+
+            // Determine player's team and if they won
+            const playerPosition =
+              match.player_1_id === currentPlayerId
+                ? 1
+                : match.player_2_id === currentPlayerId
+                ? 2
+                : match.player_3_id === currentPlayerId
+                ? 3
+                : 4;
+
+            const playerTeam = playerPosition <= 2 ? 1 : 2;
+            const won = match.winner_team === playerTeam;
+
+            // Get team players
+            const teamPlayers =
+              playerTeam === 1
+                ? [match.player_1, match.player_2]
+                : [match.player_3, match.player_4];
+
+            // Get opponents
+            const opponents =
+              playerTeam === 1
+                ? [match.player_3, match.player_4]
+                : [match.player_1, match.player_2];
+
+            // Get ELO change
+            const eloKey = `player_${playerPosition}` as const;
             const eloChange = match.elo_changes?.[eloKey]?.change || 0;
 
             return (
@@ -81,20 +100,56 @@ export function RecentMatches() {
                     }`}
                   >
                     {won ? (
-                      <TrendingUp className="h-4 w-4" />
+                      <Trophy className="h-4 w-4" />
                     ) : (
                       <TrendingDown className="h-4 w-4" />
                     )}
                   </div>
-                  <div>
-                    <p className="text-sm font-medium">
-                      {won ? "Victoria" : "Derrota"}
-                    </p>
+                  <div className="flex items-center gap-2">
+                    <div
+                      className={`flex -space-x-2 ${
+                        won ? "ring-2 ring-green-500/50 rounded-full" : ""
+                      }`}
+                    >
+                      {teamPlayers.map((player) => (
+                        <PlayerAvatar
+                          key={player.id}
+                          name={player.display_name}
+                          avatarUrl={player.avatar_url}
+                          isGhost={player.is_ghost}
+                          size="sm"
+                          className="ring-2 ring-background"
+                        />
+                      ))}
+                    </div>
+                    <span className="text-xs text-muted-foreground">vs</span>
+                    <div
+                      className={`flex -space-x-2 ${
+                        !won ? "ring-2 ring-red-500/50 rounded-full" : ""
+                      }`}
+                    >
+                      {opponents.map((opponent) => (
+                        <PlayerAvatar
+                          key={opponent.id}
+                          name={opponent.display_name}
+                          avatarUrl={opponent.avatar_url}
+                          isGhost={opponent.is_ghost}
+                          size="sm"
+                          className="ring-2 ring-background"
+                        />
+                      ))}
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="text-right">
                     <p className="text-xs text-muted-foreground">
                       {new Date(match.match_date).toLocaleDateString("es-AR", {
                         day: "numeric",
                         month: "short",
-                      })}{" "}
+                      })}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
                       {new Date(match.match_date).toLocaleTimeString("es-AR", {
                         hour: "2-digit",
                         minute: "2-digit",
@@ -102,15 +157,15 @@ export function RecentMatches() {
                       })}
                     </p>
                   </div>
+                  <span
+                    className={`text-sm font-semibold ${
+                      eloChange >= 0 ? "text-green-500" : "text-red-500"
+                    }`}
+                  >
+                    {eloChange >= 0 ? "+" : ""}
+                    {Math.round(eloChange)}
+                  </span>
                 </div>
-                <span
-                  className={`text-sm font-semibold ${
-                    eloChange >= 0 ? "text-green-500" : "text-red-500"
-                  }`}
-                >
-                  {eloChange >= 0 ? "+" : ""}
-                  {Math.round(eloChange)}
-                </span>
               </Link>
             );
           })

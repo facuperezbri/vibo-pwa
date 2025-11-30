@@ -60,6 +60,7 @@ export default function CompleteProfilePage() {
     phone: "",
     email: "",
     gender: "",
+    playingSide: "" as "Drive" | "Revés" | "",
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -142,6 +143,7 @@ export default function CompleteProfilePage() {
       country: metadata.country || "",
       province: metadata.province || metadata.state || "",
       gender: metadata.gender || "",
+      playingSide: (metadata.playing_side as "Drive" | "Revés") || "",
     });
 
     // Load provinces if country is set
@@ -202,6 +204,7 @@ export default function CompleteProfilePage() {
         country: formData.country || null,
         province: formData.province || null,
         gender: formData.gender || null,
+        playing_side: formData.playingSide || null,
       };
 
       // Only update email/phone if they were provided (not from OAuth)
@@ -566,6 +569,33 @@ export default function CompleteProfilePage() {
                   </SelectContent>
                 </Select>
               </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="playingSide">Lado de juego</Label>
+              <div className="relative">
+                <Swords className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Select
+                  value={formData.playingSide}
+                  onValueChange={(value) =>
+                    setFormData({
+                      ...formData,
+                      playingSide: value as "Drive" | "Revés" | "",
+                    })
+                  }
+                >
+                  <SelectTrigger className="pl-10">
+                    <SelectValue placeholder="Selecciona tu lado de juego" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Drive">Drive (Derecha)</SelectItem>
+                    <SelectItem value="Revés">Revés (Izquierda)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Seleccioná el lado de la cancha donde jugás habitualmente
+              </p>
             </div>
 
             <div className="space-y-2 pt-2">

@@ -34,6 +34,7 @@ export interface Database {
           phone: string | null;
           email: string | null;
           gender: string | null;
+          playing_side: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -51,6 +52,7 @@ export interface Database {
           phone?: string | null;
           email?: string | null;
           gender?: string | null;
+          playing_side?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -68,6 +70,7 @@ export interface Database {
           phone?: string | null;
           email?: string | null;
           gender?: string | null;
+          playing_side?: string | null;
           created_at?: string;
           updated_at?: string;
         };

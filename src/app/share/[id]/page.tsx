@@ -39,7 +39,7 @@ interface MatchData {
   match_date: string;
   venue: string | null;
   score_sets: SetScore[];
-  winner_team: number;
+  winner_team: 1 | 2;
   match_config: MatchConfig | null;
   player_1: Player & { avatar_url?: string | null };
   player_2: Player & { avatar_url?: string | null };

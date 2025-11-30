@@ -124,11 +124,15 @@ export function ProfileForm({
       }
     } else {
       setAvailableProvinces([]);
-      if (countryChanged && formData.province) {
-        setFormData((prev) => ({ ...prev, province: "" }));
+      if (countryChanged) {
+        setFormData((prev) => {
+          if (prev.province) {
+            return { ...prev, province: "" };
+          }
+          return prev;
+        });
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData.country]);
 
   async function handleSaveProfile() {

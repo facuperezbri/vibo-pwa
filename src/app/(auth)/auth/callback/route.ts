@@ -55,7 +55,7 @@ export async function GET(request: Request) {
       // Try to get profile, create if it doesn't exist
       let { data: profile, error: profileError } = await supabase
         .from("profiles")
-        .select("category_label")
+        .select("category_label, country, province, email, phone")
         .eq("id", user.id)
         .single();
 
@@ -80,6 +80,8 @@ export async function GET(request: Request) {
           avatar_url: metadata.avatar_url || null,
           elo_score: 1400,
           category_label: "8va",
+          email: user.email || null,
+          phone: metadata.phone || metadata.phone_number || null,
         });
 
         if (createError) {
@@ -91,8 +93,15 @@ export async function GET(request: Request) {
         return NextResponse.redirect(`${origin}/complete-profile`);
       }
 
-      // If profile doesn't have category_label, redirect to complete profile
-      if (!profile.category_label) {
+      // If profile doesn't have required fields, redirect to complete profile
+      const hasRequiredFields =
+        profile.category_label &&
+        profile.country &&
+        profile.province &&
+        (profile.email || user.email) &&
+        profile.phone;
+
+      if (!hasRequiredFields) {
         return NextResponse.redirect(`${origin}/complete-profile`);
       }
     }

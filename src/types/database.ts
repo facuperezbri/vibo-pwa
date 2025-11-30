@@ -21,6 +21,10 @@ export interface Database {
           category_label: PlayerCategory
           matches_played: number
           matches_won: number
+          country: string | null
+          province: string | null
+          phone: string | null
+          email: string | null
           created_at: string
           updated_at: string
         }
@@ -33,6 +37,10 @@ export interface Database {
           category_label?: PlayerCategory
           matches_played?: number
           matches_won?: number
+          country?: string | null
+          province?: string | null
+          phone?: string | null
+          email?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -45,6 +53,10 @@ export interface Database {
           category_label?: PlayerCategory
           matches_played?: number
           matches_won?: number
+          country?: string | null
+          province?: string | null
+          phone?: string | null
+          email?: string | null
           created_at?: string
           updated_at?: string
         }

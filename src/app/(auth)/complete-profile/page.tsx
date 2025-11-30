@@ -18,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { getCountries, getProvincesByCountry } from "@/lib/countries";
 import { createClient } from "@/lib/supabase/client";
 import {
   CATEGORIES,
@@ -25,7 +26,15 @@ import {
   CATEGORY_LABELS,
   type PlayerCategory,
 } from "@/types/database";
-import { Loader2, Swords, User } from "lucide-react";
+import {
+  Globe,
+  Loader2,
+  Mail,
+  MapPin,
+  Phone,
+  Swords,
+  User,
+} from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -34,13 +43,23 @@ export default function CompleteProfilePage() {
     fullName: "",
     username: "",
     category: "8va" as PlayerCategory,
+    country: "",
+    province: "",
+    phone: "",
+    email: "",
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [hasOAuthEmail, setHasOAuthEmail] = useState(false);
+  const [hasOAuthPhone, setHasOAuthPhone] = useState(false);
+  const [availableProvinces, setAvailableProvinces] = useState<
+    Array<{ code: string; name: string }>
+  >([]);
   const router = useRouter();
   const searchParams = useSearchParams();
   const supabase = createClient();
+  const countries = getCountries();
 
   useEffect(() => {
     loadUserData();
@@ -64,7 +83,15 @@ export default function CompleteProfilePage() {
       .eq("id", user.id)
       .single();
 
-    if (profile && profile.category_label) {
+    // Check if profile is complete (has category and required fields)
+    if (
+      profile &&
+      profile.category_label &&
+      profile.country &&
+      profile.province &&
+      (profile.email || user.email) &&
+      profile.phone
+    ) {
       // Profile already complete, redirect
       router.push("/");
       return;
@@ -72,14 +99,52 @@ export default function CompleteProfilePage() {
 
     // Pre-fill with OAuth data
     const metadata = user.user_metadata || {};
+    const oauthEmail = user.email || metadata.email;
+    const oauthPhone = metadata.phone || metadata.phone_number;
+
+    setHasOAuthEmail(!!oauthEmail);
+    setHasOAuthPhone(!!oauthPhone);
+
     setFormData({
       fullName: metadata.full_name || metadata.name || "",
       username: metadata.username || metadata.preferred_username || "",
       category: "8va",
+      email: oauthEmail || "",
+      phone: oauthPhone || "",
+      country: metadata.country || "",
+      province: metadata.province || metadata.state || "",
     });
+
+    // Load provinces if country is set
+    if (metadata.country) {
+      const provinces = getProvincesByCountry(metadata.country);
+      setAvailableProvinces(provinces);
+    }
 
     setLoading(false);
   }
+
+  useEffect(() => {
+    if (formData.country) {
+      const provinces = getProvincesByCountry(formData.country);
+      setAvailableProvinces(provinces);
+      // Reset province if country changes and current province is not valid
+      if (
+        formData.province &&
+        !provinces.find(
+          (p) => p.code === formData.province || p.name === formData.province
+        )
+      ) {
+        setFormData((prev) => ({ ...prev, province: "" }));
+      }
+    } else {
+      setAvailableProvinces([]);
+      if (formData.province) {
+        setFormData((prev) => ({ ...prev, province: "" }));
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formData.country]);
 
   async function handleComplete(e: React.FormEvent) {
     e.preventDefault();
@@ -95,14 +160,31 @@ export default function CompleteProfilePage() {
 
     try {
       // Update profile
+      const updateData: any = {
+        full_name: formData.fullName || null,
+        username: formData.username || null,
+        elo_score: initialElo,
+        category_label: formData.category,
+        country: formData.country || null,
+        province: formData.province || null,
+      };
+
+      // Only update email/phone if they were provided (not from OAuth)
+      if (!hasOAuthEmail && formData.email) {
+        updateData.email = formData.email;
+      } else if (hasOAuthEmail && user.email) {
+        updateData.email = user.email;
+      }
+
+      if (!hasOAuthPhone && formData.phone) {
+        updateData.phone = formData.phone;
+      } else if (hasOAuthPhone) {
+        updateData.phone = formData.phone;
+      }
+
       const { error: updateError } = await supabase
         .from("profiles")
-        .update({
-          full_name: formData.fullName || null,
-          username: formData.username || null,
-          elo_score: initialElo,
-          category_label: formData.category,
-        })
+        .update(updateData)
         .eq("id", user.id);
 
       if (updateError) {
@@ -237,6 +319,96 @@ export default function CompleteProfilePage() {
                 puntos
               </p>
             </div>
+
+            {!hasOAuthEmail && (
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="tu@email.com"
+                    value={formData.email}
+                    onChange={(e) =>
+                      setFormData({ ...formData, email: e.target.value })
+                    }
+                    className="pl-10"
+                    required
+                  />
+                </div>
+              </div>
+            )}
+
+            <div className="space-y-2">
+              <Label htmlFor="country">País</Label>
+              <div className="relative">
+                <Globe className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Select
+                  value={formData.country}
+                  onValueChange={(value) =>
+                    setFormData({ ...formData, country: value })
+                  }
+                >
+                  <SelectTrigger className="pl-10">
+                    <SelectValue placeholder="Selecciona tu país" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {countries.map((country) => (
+                      <SelectItem key={country.code} value={country.code}>
+                        {country.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {formData.country && availableProvinces.length > 0 && (
+              <div className="space-y-2">
+                <Label htmlFor="province">Provincia</Label>
+                <div className="relative">
+                  <MapPin className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Select
+                    value={formData.province}
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, province: value })
+                    }
+                  >
+                    <SelectTrigger className="pl-10">
+                      <SelectValue placeholder="Selecciona tu provincia" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableProvinces.map((province) => (
+                        <SelectItem key={province.code} value={province.name}>
+                          {province.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            )}
+
+            {!hasOAuthPhone && (
+              <div className="space-y-2">
+                <Label htmlFor="phone">Teléfono</Label>
+                <div className="relative">
+                  <Phone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    id="phone"
+                    type="tel"
+                    placeholder="+54 9 11 1234-5678"
+                    value={formData.phone}
+                    onChange={(e) =>
+                      setFormData({ ...formData, phone: e.target.value })
+                    }
+                    className="pl-10"
+                    required
+                  />
+                </div>
+              </div>
+            )}
 
             <Button type="submit" className="w-full" disabled={saving}>
               {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

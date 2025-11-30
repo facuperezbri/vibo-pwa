@@ -19,6 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { getCountries, getProvincesByCountry } from "@/lib/countries";
 import { createClient } from "@/lib/supabase/client";
 import {
   CATEGORIES,
@@ -26,7 +27,16 @@ import {
   CATEGORY_LABELS,
   type PlayerCategory,
 } from "@/types/database";
-import { Loader2, Lock, Mail, Swords, User } from "lucide-react";
+import {
+  Globe,
+  Loader2,
+  Lock,
+  Mail,
+  MapPin,
+  Phone,
+  Swords,
+  User,
+} from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -38,16 +48,42 @@ export default function SignupPage() {
     fullName: "",
     username: "",
     category: "8va" as PlayerCategory,
+    country: "",
+    province: "",
+    phone: "",
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [availableProvinces, setAvailableProvinces] = useState<
+    Array<{ code: string; name: string }>
+  >([]);
   const router = useRouter();
+  const countries = getCountries();
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  useEffect(() => {
+    if (formData.country) {
+      const provinces = getProvincesByCountry(formData.country);
+      setAvailableProvinces(provinces);
+      // Reset province if country changes
+      if (
+        formData.province &&
+        !provinces.find(
+          (p) => p.code === formData.province || p.name === formData.province
+        )
+      ) {
+        setFormData({ ...formData, province: "" });
+      }
+    } else {
+      setAvailableProvinces([]);
+      setFormData({ ...formData, province: "" });
+    }
+  }, [formData.country]);
 
   async function handleSignup(e: React.FormEvent) {
     e.preventDefault();
@@ -94,6 +130,10 @@ export default function SignupPage() {
             category_label: formData.category,
             full_name: formData.fullName,
             username: formData.username,
+            email: formData.email,
+            country: formData.country || null,
+            province: formData.province || null,
+            phone: formData.phone || null,
           })
           .eq("id", user.id);
 
@@ -263,6 +303,74 @@ export default function SignupPage() {
                   Tu ELO inicial será de {CATEGORY_ELO_MAP[formData.category]}{" "}
                   puntos
                 </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="country">País</Label>
+                <div className="relative">
+                  <Globe className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Select
+                    value={formData.country}
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, country: value })
+                    }
+                  >
+                    <SelectTrigger className="pl-10">
+                      <SelectValue placeholder="Selecciona tu país" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {countries.map((country) => (
+                        <SelectItem key={country.code} value={country.code}>
+                          {country.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {formData.country && availableProvinces.length > 0 && (
+                <div className="space-y-2">
+                  <Label htmlFor="province">Provincia</Label>
+                  <div className="relative">
+                    <MapPin className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <Select
+                      value={formData.province}
+                      onValueChange={(value) =>
+                        setFormData({ ...formData, province: value })
+                      }
+                    >
+                      <SelectTrigger className="pl-10">
+                        <SelectValue placeholder="Selecciona tu provincia" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {availableProvinces.map((province) => (
+                          <SelectItem key={province.code} value={province.name}>
+                            {province.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              )}
+
+              <div className="space-y-2">
+                <Label htmlFor="phone">Teléfono</Label>
+                <div className="relative">
+                  <Phone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    id="phone"
+                    type="tel"
+                    placeholder="+54 9 11 1234-5678"
+                    value={formData.phone}
+                    onChange={(e) =>
+                      setFormData({ ...formData, phone: e.target.value })
+                    }
+                    className="pl-10"
+                    required
+                  />
+                </div>
               </div>
 
               <Button

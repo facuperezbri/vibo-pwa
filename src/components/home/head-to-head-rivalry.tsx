@@ -2,6 +2,7 @@
 
 import { HeadToHeadStatsComponent } from '@/components/player/head-to-head-stats'
 import { createClient } from '@/lib/supabase/client'
+import { HeadToHeadStats } from '@/types/database'
 import { useEffect, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -18,6 +19,7 @@ interface OpponentInfo {
 export function HeadToHeadRivalry() {
   const [currentPlayerId, setCurrentPlayerId] = useState<string | null>(null)
   const [opponent, setOpponent] = useState<OpponentInfo | null>(null)
+  const [stats, setStats] = useState<HeadToHeadStats | null>(null)
   const [loading, setLoading] = useState(true)
   const supabase = createClient()
 
@@ -149,6 +151,19 @@ export function HeadToHeadRivalry() {
             playerAvatarUrl: avatarUrl,
             matchCount: maxCount
           })
+
+          // Load head-to-head stats immediately after finding the opponent
+          const { data: headToHeadStats, error: statsError } = await supabase.rpc(
+            'get_head_to_head_stats',
+            {
+              player_a_id: mostFrequentOpponentId,
+              player_b_id: playerRecord.id,
+            }
+          )
+
+          if (!statsError && headToHeadStats && !headToHeadStats.error) {
+            setStats(headToHeadStats as HeadToHeadStats)
+          }
         }
       } catch (error) {
         console.error('Error loading head-to-head rivalry:', error)
@@ -228,6 +243,7 @@ export function HeadToHeadRivalry() {
           compact={true}
           title=""
           showLink={true}
+          initialStats={stats}
         />
       </CardContent>
     </Card>

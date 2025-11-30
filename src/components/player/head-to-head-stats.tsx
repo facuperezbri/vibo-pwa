@@ -19,6 +19,7 @@ interface HeadToHeadStatsProps {
   compact?: boolean
   title?: string
   showLink?: boolean
+  initialStats?: HeadToHeadStats | null
 }
 
 export function HeadToHeadStatsComponent({
@@ -30,13 +31,21 @@ export function HeadToHeadStatsComponent({
   compact = false,
   title = 'Historial Rivalidades',
   showLink = true,
+  initialStats,
 }: HeadToHeadStatsProps) {
-  const [stats, setStats] = useState<HeadToHeadStats | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [stats, setStats] = useState<HeadToHeadStats | null>(initialStats ?? null)
+  const [loading, setLoading] = useState(!initialStats)
   const [error, setError] = useState<string | null>(null)
   const supabase = createClient()
 
   useEffect(() => {
+    // If initialStats is provided, use them and skip the RPC call
+    if (initialStats !== undefined) {
+      setStats(initialStats)
+      setLoading(false)
+      return
+    }
+
     async function loadHeadToHeadStats() {
       if (!playerAId || !playerBId) {
         setLoading(false)
@@ -75,7 +84,7 @@ export function HeadToHeadStatsComponent({
     }
 
     loadHeadToHeadStats()
-  }, [playerAId, playerBId, supabase])
+  }, [playerAId, playerBId, supabase, initialStats])
 
   function formatDate(dateString: string | null): string {
     if (!dateString) return 'N/A'

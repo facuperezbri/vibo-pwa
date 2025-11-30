@@ -1,7 +1,6 @@
 "use client";
 
 import { OAuthButtons } from "@/components/auth/oauth-buttons";
-import { ViboLogo } from "@/components/layout/vibo-logo";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -72,9 +71,6 @@ export default function LoginPage() {
     <div className="flex min-h-screen flex-col items-center justify-center p-4">
       {/* Logo/Brand */}
       <div className="mb-8 flex flex-col items-center">
-        <div className="mb-4">
-          <ViboLogo size="lg" />
-        </div>
         <h1 className="text-2xl font-bold">Vibo</h1>
         <p className="text-sm text-muted-foreground">
           Tu ranking, tus partidos

@@ -1,6 +1,5 @@
 "use client";
 
-import { ViboLogo } from "@/components/layout/vibo-logo";
 import { ClaimGhostPlayers } from "@/components/profile/claim-ghost-players";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -263,9 +262,6 @@ export default function CompleteProfilePage() {
     <div className="flex min-h-screen flex-col items-center justify-center p-4">
       {/* Logo/Brand */}
       <div className="mb-6 flex flex-col items-center">
-        <div className="mb-3">
-          <ViboLogo size="md" />
-        </div>
         <h1 className="text-xl font-bold">Vibo</h1>
       </div>
 

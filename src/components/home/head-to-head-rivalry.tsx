@@ -10,6 +10,7 @@ import { Swords } from 'lucide-react'
 interface OpponentInfo {
   playerId: string
   playerName: string
+  playerAvatarUrl: string | null
   matchCount: number
 }
 
@@ -120,17 +121,31 @@ export function HeadToHeadRivalry() {
           return
         }
 
-        // Get opponent name
+        // Get opponent name and avatar
         const { data: opponentPlayer } = await supabase
           .from('players')
-          .select('id, display_name')
+          .select('id, display_name, profile_id, is_ghost')
           .eq('id', mostFrequentOpponentId)
           .single()
 
         if (opponentPlayer) {
+          let avatarUrl: string | null = null
+          
+          // Get avatar if player has a profile
+          if (opponentPlayer.profile_id && !opponentPlayer.is_ghost) {
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('avatar_url')
+              .eq('id', opponentPlayer.profile_id)
+              .maybeSingle()
+            
+            avatarUrl = profile?.avatar_url || null
+          }
+
           setOpponent({
             playerId: mostFrequentOpponentId,
             playerName: opponentPlayer.display_name,
+            playerAvatarUrl: avatarUrl,
             matchCount: maxCount
           })
         }
@@ -166,12 +181,14 @@ export function HeadToHeadRivalry() {
 
   return (
     <HeadToHeadStatsComponent
-      playerAId={currentPlayerId}
-      playerBId={opponent.playerId}
-      playerAName="Tú"
-      playerBName={opponent.playerName}
+      playerAId={opponent.playerId}
+      playerBId={currentPlayerId}
+      playerAName={opponent.playerName}
+      playerBName="Tú"
+      playerAAvatarUrl={opponent.playerAvatarUrl}
       compact={true}
       title="Rivalidad Principal"
+      showLink={true}
     />
   )
 }

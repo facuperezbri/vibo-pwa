@@ -3,18 +3,22 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
+import { PlayerAvatar } from '@/components/ui/player-avatar'
 import { createClient } from '@/lib/supabase/client'
 import { HeadToHeadStats } from '@/types/database'
 import { Swords, Trophy, Calendar, Flame, TrendingUp, TrendingDown } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 
 interface HeadToHeadStatsProps {
   playerAId: string
   playerBId: string
   playerAName?: string
   playerBName?: string
+  playerAAvatarUrl?: string | null
   compact?: boolean
   title?: string
+  showLink?: boolean
 }
 
 export function HeadToHeadStatsComponent({
@@ -22,8 +26,10 @@ export function HeadToHeadStatsComponent({
   playerBId,
   playerAName,
   playerBName,
+  playerAAvatarUrl,
   compact = false,
   title = 'Historial Rivalidades',
+  showLink = true,
 }: HeadToHeadStatsProps) {
   const [stats, setStats] = useState<HeadToHeadStats | null>(null)
   const [loading, setLoading] = useState(true)
@@ -97,18 +103,20 @@ export function HeadToHeadStatsComponent({
     }
   }
 
-  function formatStreak(streak: number, playerAWin: boolean): { text: string; color: string; icon: 'flame' | 'trending-down' } {
+  function formatStreak(streak: number): { text: string; color: string; icon: 'flame' | 'trending-down' } {
+    // streak > 0 means playerA is winning, streak < 0 means playerB is winning
+    // We want to show from playerB's perspective (the user)
     if (streak > 0) {
-      const playerName = playerAWin ? (playerAName || 'Jugador A') : (playerBName || 'Jugador B')
+      // PlayerA (rival) is winning
       return {
-        text: `${Math.abs(streak)} victoria${Math.abs(streak) > 1 ? 's' : ''} de ${playerName}`,
-        color: 'text-green-600',
-        icon: 'flame'
+        text: `${Math.abs(streak)} victoria${Math.abs(streak) > 1 ? 's' : ''} de ${playerAName || 'Jugador A'}`,
+        color: 'text-red-600',
+        icon: 'trending-down'
       }
     } else if (streak < 0) {
-      const playerName = playerAWin ? (playerBName || 'Jugador B') : (playerAName || 'Jugador A')
+      // PlayerB (user) is winning
       return {
-        text: `${Math.abs(streak)} victoria${Math.abs(streak) > 1 ? 's' : ''} de ${playerName}`,
+        text: `${Math.abs(streak)} victoria${Math.abs(streak) > 1 ? 's' : ''}`,
         color: 'text-green-600',
         icon: 'flame'
       }
@@ -178,99 +186,79 @@ export function HeadToHeadStatsComponent({
     ? Math.round((stats.player_a_wins / stats.total_matches) * 100 * 10) / 10
     : 0
 
-  const playerBWinRate = stats.total_matches > 0
-    ? Math.round((stats.player_b_wins / stats.total_matches) * 100 * 10) / 10
-    : 0
+  const streakInfo = formatStreak(stats.current_streak)
 
-  const streakInfo = formatStreak(stats.current_streak, stats.current_streak > 0)
-  const playerAIsWinning = stats.player_a_wins > stats.player_b_wins
+  const content = (
+    <div className="flex items-center gap-3 rounded-lg bg-muted/50 p-3 transition-colors hover:bg-muted cursor-pointer">
+      <PlayerAvatar
+        name={playerAName || 'Jugador A'}
+        avatarUrl={playerAAvatarUrl}
+        size="md"
+        className="ring-2 ring-background"
+      />
+      <div className="flex-1 min-w-0">
+        <p className="font-medium truncate">{playerAName || 'Jugador A'}</p>
+        <div className="flex flex-col gap-1.5 mt-1">
+          <div className="flex items-center gap-2 flex-wrap">
+            <Badge variant="outline" className="text-xs pl-0 border-0 bg-transparent">
+              {stats.total_matches} partidos
+            </Badge>
+            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+              <Trophy className="h-3 w-3 text-green-600" />
+              <span className="font-medium text-green-600">
+                {stats.player_a_wins}
+              </span>
+              <span className="text-muted-foreground">-</span>
+              <span className="text-red-600">{stats.player_b_wins}</span>
+            </div>
+          </div>
+          <div className="flex items-center gap-3 text-xs text-muted-foreground">
+            {stats.last_match_date && (
+              <div className="flex items-center gap-1">
+                <Calendar className="h-3 w-3" />
+                <span>Último: {formatDate(stats.last_match_date)}</span>
+              </div>
+            )}
+            {stats.current_streak !== 0 && (
+              <div className={`flex items-center gap-1 ${streakInfo.color}`}>
+                {streakInfo.icon === 'flame' ? (
+                  <Flame className="h-3 w-3 fill-current" />
+                ) : (
+                  <TrendingDown className="h-3 w-3" />
+                )}
+                <span className="font-medium">{streakInfo.text}</span>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+      <div className="flex flex-col items-end gap-1">
+        <div className="flex items-center gap-1">
+          <TrendingUp className="h-4 w-4 text-primary" />
+          <span className="font-semibold text-sm">
+            {playerAWinRate.toFixed(1)}%
+          </span>
+        </div>
+        <p className="text-xs text-muted-foreground">victorias</p>
+      </div>
+    </div>
+  )
 
   return (
     <Card>
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-base">
           <Swords className="h-4 w-4" />
-          Historial Rivalidades
+          {title}
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
-        {/* Main Stats Grid */}
-        <div className="grid grid-cols-3 gap-3">
-          <div className="text-center rounded-lg bg-muted/50 p-3">
-            <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground mb-1">
-              <Trophy className="h-3 w-3" />
-              <span>Total</span>
-            </div>
-            <p className="text-2xl font-bold">{stats.total_matches}</p>
-            <p className="text-xs text-muted-foreground mt-1">partidos</p>
-          </div>
-          
-          <div className={`text-center rounded-lg p-3 ${
-            playerAIsWinning ? 'bg-green-500/10 ring-2 ring-green-500/20' : 'bg-muted/50'
-          }`}>
-            <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground mb-1">
-              <Trophy className={`h-3 w-3 ${playerAIsWinning ? 'text-green-600' : ''}`} />
-              <span className={playerAIsWinning ? 'text-green-600 font-medium' : ''}>
-                {playerAName || 'Jugador A'}
-              </span>
-            </div>
-            <p className={`text-2xl font-bold ${playerAIsWinning ? 'text-green-600' : ''}`}>
-              {stats.player_a_wins}
-            </p>
-            <p className="text-xs text-muted-foreground mt-1">
-              {playerAWinRate}% victorias
-            </p>
-          </div>
-
-          <div className={`text-center rounded-lg p-3 ${
-            !playerAIsWinning && stats.total_matches > 0 ? 'bg-green-500/10 ring-2 ring-green-500/20' : 'bg-muted/50'
-          }`}>
-            <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground mb-1">
-              <Trophy className={`h-3 w-3 ${!playerAIsWinning && stats.total_matches > 0 ? 'text-green-600' : ''}`} />
-              <span className={!playerAIsWinning && stats.total_matches > 0 ? 'text-green-600 font-medium' : ''}>
-                {playerBName || 'Jugador B'}
-              </span>
-            </div>
-            <p className={`text-2xl font-bold ${!playerAIsWinning && stats.total_matches > 0 ? 'text-green-600' : ''}`}>
-              {stats.player_b_wins}
-            </p>
-            <p className="text-xs text-muted-foreground mt-1">
-              {playerBWinRate}% victorias
-            </p>
-          </div>
-        </div>
-
-        {/* Additional Info */}
-        {!compact && (
-          <div className="space-y-2 pt-2 border-t">
-            {/* Streak */}
-            {stats.current_streak !== 0 && (
-              <div className={`flex items-center gap-2 text-sm ${streakInfo.color}`}>
-                {streakInfo.icon === 'flame' ? (
-                  <Flame className="h-4 w-4 fill-current" />
-                ) : (
-                  <TrendingDown className="h-4 w-4" />
-                )}
-                <span className="font-medium">{streakInfo.text}</span>
-              </div>
-            )}
-
-            {/* Dates */}
-            <div className="flex items-center gap-4 text-xs text-muted-foreground">
-              {stats.first_match_date && (
-                <div className="flex items-center gap-1">
-                  <Calendar className="h-3 w-3" />
-                  <span>Primer partido: {formatDate(stats.first_match_date)}</span>
-                </div>
-              )}
-              {stats.last_match_date && (
-                <div className="flex items-center gap-1">
-                  <Calendar className="h-3 w-3" />
-                  <span>Último: {formatDate(stats.last_match_date)}</span>
-                </div>
-              )}
-            </div>
-          </div>
+      <CardContent className="space-y-3">
+        {showLink ? (
+          <Link href={`/player/${playerAId}`} className="block">
+            {content}
+          </Link>
+        ) : (
+          content
         )}
       </CardContent>
     </Card>

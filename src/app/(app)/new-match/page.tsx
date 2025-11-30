@@ -44,6 +44,7 @@ import {
   validateMatch,
 } from "@/lib/padel-rules";
 import { createClient } from "@/lib/supabase/client";
+import { fuzzySearch } from "@/lib/utils";
 import type {
   MatchConfig,
   MatchInvitation,
@@ -1347,9 +1348,22 @@ function PlayerSlot({
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
 
-  const filteredPlayers = availablePlayers.filter((p) =>
-    p.display_name.toLowerCase().includes(search.toLowerCase())
+  // Usar búsqueda difusa para encontrar jugadores similares
+  const searchResults = fuzzySearch(
+    availablePlayers,
+    search,
+    (p) => p.display_name,
+    30
   );
+
+  const filteredPlayers = searchResults.map((result) => result.item);
+  const hasExactMatches = searchResults.some(
+    (r) => r.matchType === "exact" || r.matchType === "starts-with"
+  );
+  const hasFuzzyMatches = searchResults.some((r) => r.matchType === "fuzzy");
+
+  // Crear un mapa para acceso rápido al resultado de búsqueda por ID
+  const resultMap = new Map(searchResults.map((r) => [r.item.id, r]));
 
   if (player) {
     return (
@@ -1408,56 +1422,84 @@ function PlayerSlot({
             onValueChange={setSearch}
           />
           <CommandList className="max-h-[50vh]">
-            <CommandEmpty>
-              <div className="py-6 text-center">
-                <p className="text-sm text-muted-foreground">
-                  No se encontraron jugadores
-                </p>
-                <Button
-                  variant="link"
-                  className="mt-2"
-                  onClick={() => {
-                    setOpen(false);
-                    onCreateGhost(position);
-                  }}
-                >
-                  <UserPlus className="mr-2 h-4 w-4" />
-                  Crear jugador invitado
-                </Button>
-              </div>
-            </CommandEmpty>
-            <CommandGroup>
-              {filteredPlayers.map((p) => (
-                <CommandItem
-                  key={p.id}
-                  value={p.display_name}
-                  onSelect={() => {
-                    onSelect(p, position);
-                    setOpen(false);
-                  }}
-                  className="flex items-center gap-3 p-3"
-                >
-                  <PlayerAvatar
-                    name={p.display_name}
-                    avatarUrl={p.avatar_url}
-                    isGhost={p.is_ghost}
-                    size="sm"
-                  />
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <p className="font-medium">{p.display_name}</p>
-                      {p.is_ghost && <GhostPlayerBadge />}
-                      <NewPlayerBadge matchesPlayed={p.matches_played || 0} />
-                    </div>
+            {filteredPlayers.length === 0 ? (
+              <CommandEmpty>
+                <div className="py-6 text-center">
+                  <p className="text-sm text-muted-foreground">
+                    No se encontraron jugadores
+                  </p>
+                  <Button
+                    variant="link"
+                    className="mt-2"
+                    onClick={() => {
+                      setOpen(false);
+                      onCreateGhost(position);
+                    }}
+                  >
+                    <UserPlus className="mr-2 h-4 w-4" />
+                    Crear jugador invitado
+                  </Button>
+                </div>
+              </CommandEmpty>
+            ) : (
+              <>
+                {hasFuzzyMatches && !hasExactMatches && search.trim() && (
+                  <div className="px-4 py-2 text-xs text-muted-foreground border-b">
+                    Mostrando sugerencias similares
                   </div>
-                  <EloBadge
-                    elo={p.elo_score}
-                    category={p.category_label}
-                    size="sm"
-                  />
-                </CommandItem>
-              ))}
-            </CommandGroup>
+                )}
+                <CommandGroup>
+                  {filteredPlayers.map((p) => {
+                    const result = resultMap.get(p.id);
+                    const isFuzzyMatch = result?.matchType === "fuzzy";
+
+                    return (
+                      <CommandItem
+                        key={p.id}
+                        value={p.display_name}
+                        onSelect={() => {
+                          onSelect(p, position);
+                          setOpen(false);
+                        }}
+                        className="flex items-center gap-3 p-3"
+                      >
+                        <PlayerAvatar
+                          name={p.display_name}
+                          avatarUrl={p.avatar_url}
+                          isGhost={p.is_ghost}
+                          size="sm"
+                        />
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <p
+                              className={`font-medium ${
+                                isFuzzyMatch ? "opacity-90" : ""
+                              }`}
+                            >
+                              {p.display_name}
+                            </p>
+                            {isFuzzyMatch && (
+                              <span className="text-xs text-muted-foreground italic">
+                                (similar)
+                              </span>
+                            )}
+                            {p.is_ghost && <GhostPlayerBadge />}
+                            <NewPlayerBadge
+                              matchesPlayed={p.matches_played || 0}
+                            />
+                          </div>
+                        </div>
+                        <EloBadge
+                          elo={p.elo_score}
+                          category={p.category_label}
+                          size="sm"
+                        />
+                      </CommandItem>
+                    );
+                  })}
+                </CommandGroup>
+              </>
+            )}
             <div className="border-t p-2">
               <Button
                 variant="ghost"

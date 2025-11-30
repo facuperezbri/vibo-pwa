@@ -244,6 +244,17 @@ export function HeadToHeadStatsComponent({
     </div>
   )
 
+  if (!title) {
+    // When no title, return just the content (used inside another Card)
+    return showLink ? (
+      <Link href={`/player/${playerAId}`} className="block">
+        {content}
+      </Link>
+    ) : (
+      content
+    )
+  }
+
   return (
     <Card>
       <CardHeader className="pb-3">

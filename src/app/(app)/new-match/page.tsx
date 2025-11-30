@@ -156,7 +156,7 @@ export default function NewMatchPage() {
   >(null);
   const [newGhostName, setNewGhostName] = useState("");
   const [newGhostCategory, setNewGhostCategory] =
-    useState<PlayerCategory>("6ta");
+    useState<PlayerCategory>("8va");
   const [creatingGhost, setCreatingGhost] = useState(false);
 
   // WhatsApp share
@@ -323,7 +323,7 @@ export default function NewMatchPage() {
               display_name: profile.full_name || profile.username || "Usuario",
               is_ghost: false,
               elo_score: profile.elo_score || 1400,
-              category_label: profile.category_label || "6ta",
+              category_label: profile.category_label || "8va",
             },
             {
               onConflict: "profile_id",
@@ -481,7 +481,7 @@ export default function NewMatchPage() {
     // Reset dialog
     setShowGhostDialog(false);
     setNewGhostName("");
-    setNewGhostCategory("6ta");
+    setNewGhostCategory("8va");
     setGhostPosition(null);
     setCreatingGhost(false);
   }

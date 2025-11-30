@@ -37,7 +37,7 @@ export default function SignupPage() {
     password: "",
     fullName: "",
     username: "",
-    category: "6ta" as PlayerCategory,
+    category: "8va" as PlayerCategory,
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

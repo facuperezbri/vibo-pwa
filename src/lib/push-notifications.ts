@@ -1,3 +1,5 @@
+'use client'
+
 import { createClient } from '@/lib/supabase/client'
 
 // VAPID public key - Replace with your own from Supabase or a push service

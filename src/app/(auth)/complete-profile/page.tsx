@@ -33,7 +33,7 @@ export default function CompleteProfilePage() {
   const [formData, setFormData] = useState({
     fullName: "",
     username: "",
-    category: "6ta" as PlayerCategory,
+    category: "8va" as PlayerCategory,
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -75,7 +75,7 @@ export default function CompleteProfilePage() {
     setFormData({
       fullName: metadata.full_name || metadata.name || "",
       username: metadata.username || metadata.preferred_username || "",
-      category: "6ta",
+      category: "8va",
     });
 
     setLoading(false);

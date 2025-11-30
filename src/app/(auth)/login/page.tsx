@@ -141,7 +141,7 @@ export default function LoginPage() {
             <span className="text-muted-foreground">¿No tenés cuenta? </span>
             <Link
               href="/signup"
-              className="font-medium text-primary hover:underline"
+              className="font-medium text-secondary hover:underline"
             >
               Registrate
             </Link>

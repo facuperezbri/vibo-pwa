@@ -55,8 +55,8 @@ export function OAuthButtons({ onError }: OAuthButtonsProps) {
 
       <Button
         type="button"
-        variant="secondary"
-        className="w-full gap-2"
+        variant="outline"
+        className="w-full gap-2 bg-white hover:bg-gray-50 border-gray-300 text-primary"
         onClick={handleGoogleLogin}
         disabled={loading}
       >

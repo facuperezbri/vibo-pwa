@@ -174,6 +174,7 @@ export default function NewMatchPage() {
   const supabase = createClient();
   const { registerConfirmHandler } = useNavigation();
   const errorRef = useRef<HTMLDivElement>(null);
+  const topRef = useRef<HTMLDivElement>(null);
 
   // Check if there's unsaved data
   const hasUnsavedData = useCallback(() => {
@@ -728,6 +729,8 @@ export default function NewMatchPage() {
     if (hasPlayersToShare) {
       setShowShareDialog(true);
     } else {
+      // Reset form and scroll to top before redirecting
+      resetForm();
       setTimeout(() => {
         router.push("/matches");
         router.refresh();
@@ -735,8 +738,50 @@ export default function NewMatchPage() {
     }
   }
 
+  function resetForm() {
+    // Reset players
+    setTeam1Player2(null);
+    setTeam2Player1(null);
+    setTeam2Player2(null);
+
+    // Reset match details
+    setVenue("");
+    const today = new Date();
+    setMatchDate(today.toISOString().split("T")[0]);
+    const timeString = today.toTimeString().slice(0, 5);
+    setMatchTime(roundTimeToNearestHalfHour(timeString));
+
+    // Reset sets
+    setSets([
+      { team1: 0, team2: 0 },
+      { team1: 0, team2: 0 },
+    ]);
+    setSetInputValues([
+      { team1: "", team2: "" },
+      { team1: "", team2: "" },
+    ]);
+    setSetErrors([{}, {}]);
+
+    // Reset validation and config
+    setValidationError(null);
+    setWinnerTeam(null);
+    setMatchConfig(DEFAULT_MATCH_CONFIG);
+
+    // Reset success state
+    setSuccess(false);
+    setError(null);
+
+    // Scroll to top
+    if (topRef.current) {
+      topRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    } else {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  }
+
   function handleShareComplete() {
     setShowShareDialog(false);
+    resetForm();
     router.push("/matches");
     router.refresh();
   }
@@ -760,7 +805,7 @@ export default function NewMatchPage() {
     <>
       <Header title="Nuevo Partido" showBack />
 
-      <div className="space-y-6 p-4">
+      <div ref={topRef} className="space-y-6 p-4">
         {error && (
           <Alert ref={errorRef} variant="destructive">
             <AlertDescription>{error}</AlertDescription>
@@ -1163,7 +1208,13 @@ export default function NewMatchPage() {
         {/* WhatsApp Share Dialog */}
         <WhatsAppShareDialog
           open={showShareDialog}
-          onOpenChange={setShowShareDialog}
+          onOpenChange={(open) => {
+            setShowShareDialog(open);
+            if (!open && success) {
+              // If dialog is closed and match was successfully created, reset form
+              resetForm();
+            }
+          }}
           matchId={createdMatchId}
           players={
             [team1Player2, team2Player1, team2Player2].filter(

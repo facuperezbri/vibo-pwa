@@ -14,7 +14,7 @@ DECLARE
   new_elo3 FLOAT;
   new_elo4 FLOAT;
   team1_won BOOLEAN;
-  elo_changes JSONB;
+  elo_changes_result JSONB;
 BEGIN
   -- Get match details
   SELECT * INTO match_record FROM matches WHERE id = match_id;
@@ -105,7 +105,7 @@ BEGIN
   WHERE id = (SELECT profile_id FROM players WHERE id = match_record.player_4_id AND profile_id IS NOT NULL);
   
   -- Build ELO changes JSON
-  elo_changes := jsonb_build_object(
+  elo_changes_result := jsonb_build_object(
     'player_1', jsonb_build_object('before', player1_elo, 'after', new_elo1, 'change', new_elo1 - player1_elo),
     'player_2', jsonb_build_object('before', player2_elo, 'after', new_elo2, 'change', new_elo2 - player2_elo),
     'player_3', jsonb_build_object('before', player3_elo, 'after', new_elo3, 'change', new_elo3 - player3_elo),
@@ -113,9 +113,9 @@ BEGIN
   );
   
   -- Store ELO changes in match record (fix ambiguous reference)
-  UPDATE matches SET elo_changes = elo_changes WHERE id = match_id;
+  UPDATE matches SET elo_changes = elo_changes_result WHERE id = match_id;
   
-  RETURN elo_changes;
+  RETURN elo_changes_result;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 

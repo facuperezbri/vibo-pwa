@@ -816,6 +816,15 @@ export default function NewMatchPage() {
           </Alert>
         )}
 
+        {savingMatch && (
+          <Alert>
+            <AlertDescription className="flex items-center gap-2">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Guardando partido...
+            </AlertDescription>
+          </Alert>
+        )}
+
         {success && !showShareDialog && (
           <Alert>
             <AlertDescription className="flex items-center gap-2">
@@ -1186,8 +1195,14 @@ export default function NewMatchPage() {
             setErrors.some((err) => Object.keys(err).length > 0)
           }
         >
-          {savingMatch && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
-          Guardar Partido
+          {savingMatch ? (
+            <>
+              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+              Guardando...
+            </>
+          ) : (
+            "Guardar Partido"
+          )}
         </Button>
 
         {/* Ghost Player Dialog */}

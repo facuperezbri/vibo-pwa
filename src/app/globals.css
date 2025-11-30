@@ -155,11 +155,43 @@ input[type="number"] {
   -moz-appearance: textfield;
 }
 
-/* Date and time inputs - ensure they respect container boundaries */
+/* Date and time inputs - ensure they respect container boundaries and display correctly on mobile */
 input[type="date"],
 input[type="time"],
 input[type="datetime-local"] {
   box-sizing: border-box !important;
   max-width: 100% !important;
   width: 100% !important;
+  min-width: 0 !important;
+  /* Prevent text from being cut off */
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  /* Ensure proper font rendering on mobile */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* Fix for iOS Safari */
+  -webkit-appearance: none;
+  appearance: none;
+  /* Ensure calendar/time picker icon is visible and clickable */
+  position: relative;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator,
+input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+  opacity: 1;
+  cursor: pointer;
+  position: absolute;
+  right: 0.75rem;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+}
+
+/* Fix for Firefox */
+input[type="date"]::-moz-calendar-picker-indicator,
+input[type="time"]::-moz-calendar-picker-indicator {
+  cursor: pointer;
+  padding: 0;
+  margin: 0;
 }

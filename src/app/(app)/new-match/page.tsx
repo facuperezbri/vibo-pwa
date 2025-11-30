@@ -835,7 +835,7 @@ export default function NewMatchPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div className="space-y-2 min-w-0">
+              <div className="space-y-2 min-w-0 overflow-hidden">
                 <Label>Fecha</Label>
                 <Input
                   type="date"
@@ -843,7 +843,7 @@ export default function NewMatchPage() {
                   onChange={(e) => setMatchDate(e.target.value)}
                 />
               </div>
-              <div className="space-y-2 min-w-0">
+              <div className="space-y-2 min-w-0 overflow-hidden">
                 <Label>Hora</Label>
                 <Input
                   type="time"

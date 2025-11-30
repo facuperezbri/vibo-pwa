@@ -1,12 +1,14 @@
 'use client'
 
 import * as React from 'react'
-import PhoneInputWithCountry, { type PhoneInputProps, type Country } from 'react-phone-number-input'
+import PhoneInputWithCountry, { type Country } from 'react-phone-number-input'
 import 'react-phone-number-input/style.css'
 import { cn } from '@/lib/utils'
 import { Phone } from 'lucide-react'
 
-interface CustomPhoneInputProps extends Omit<PhoneInputProps, 'className' | 'value' | 'onChange'> {
+type PhoneInputWithCountryProps = React.ComponentProps<typeof PhoneInputWithCountry>
+
+interface CustomPhoneInputProps extends Omit<PhoneInputWithCountryProps, 'className' | 'value' | 'onChange'> {
   className?: string
   error?: boolean
   value?: string

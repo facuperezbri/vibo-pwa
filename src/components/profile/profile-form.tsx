@@ -1,108 +1,147 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { PhoneInput } from '@/components/ui/phone-input'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Loader2, Check, Ghost, Trash2 } from 'lucide-react'
+import { PushNotificationSettings } from "@/components/notifications/push-notification-settings";
+import { AvatarUpload } from "@/components/profile/avatar-upload";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-  DialogFooter,
-} from '@/components/ui/dialog'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { PlayerAvatar } from '@/components/ui/player-avatar'
-import { EloBadge } from '@/components/ui/elo-badge'
-import { AvatarUpload } from '@/components/profile/avatar-upload'
-import { PushNotificationSettings } from '@/components/notifications/push-notification-settings'
-import { Separator } from '@/components/ui/separator'
-import { LogOut, Mail, Phone, Globe, MapPin, Users } from 'lucide-react'
-import { useEditMode } from './profile-edit-button-wrapper'
-import { ClaimGhostPlayers } from './claim-ghost-players'
-import { getCountries, getProvincesByCountry, getCountryName } from '@/lib/countries'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { useEffect } from 'react'
-import type { Profile, Player } from '@/types/database'
+} from "@/components/ui/dialog";
+import { EloBadge } from "@/components/ui/elo-badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { PhoneInput } from "@/components/ui/phone-input";
+import { PlayerAvatar } from "@/components/ui/player-avatar";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
+import {
+  getCountries,
+  getCountryName,
+  getProvincesByCountry,
+} from "@/lib/countries";
+import { createClient } from "@/lib/supabase/client";
+import type { Player, Profile } from "@/types/database";
+import {
+  Check,
+  Ghost,
+  Globe,
+  Loader2,
+  LogOut,
+  Mail,
+  MapPin,
+  Phone,
+  Trash2,
+  Users,
+} from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+import { ClaimGhostPlayers } from "./claim-ghost-players";
+import { useEditMode } from "./profile-edit-button-wrapper";
 
 interface ProfileFormProps {
-  initialProfile: Profile
-  initialGhostPlayers: Player[]
+  initialProfile: Profile;
+  initialGhostPlayers: Player[];
 }
 
-export function ProfileForm({ initialProfile, initialGhostPlayers }: ProfileFormProps) {
-  const [saving, setSaving] = useState(false)
-  const [profile, setProfile] = useState<Profile>(initialProfile)
-  const [ghostPlayers, setGhostPlayers] = useState<Player[]>(initialGhostPlayers)
-  const { editMode, setEditMode } = useEditMode()
-  const [formData, setFormData] = useState({ 
-    fullName: initialProfile.full_name || '', 
-    username: initialProfile.username || '',
-    email: initialProfile.email || '',
-    phone: initialProfile.phone || '',
-    country: initialProfile.country || '',
-    province: initialProfile.province || '',
-    gender: initialProfile.gender || '',
-  })
-  const [availableProvinces, setAvailableProvinces] = useState<Array<{ code: string; name: string }>>([])
-  const [success, setSuccess] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  
-  const router = useRouter()
-  const supabase = createClient()
-  const countries = getCountries()
+export function ProfileForm({
+  initialProfile,
+  initialGhostPlayers,
+}: ProfileFormProps) {
+  const [saving, setSaving] = useState(false);
+  const [profile, setProfile] = useState<Profile>(initialProfile);
+  const [ghostPlayers, setGhostPlayers] =
+    useState<Player[]>(initialGhostPlayers);
+  const { editMode, setEditMode } = useEditMode();
+  const [formData, setFormData] = useState({
+    fullName: initialProfile.full_name || "",
+    username: initialProfile.username || "",
+    email: initialProfile.email || "",
+    phone: initialProfile.phone || "",
+    country: initialProfile.country || "",
+    province: initialProfile.province || "",
+    gender: initialProfile.gender || "",
+  });
+  const [availableProvinces, setAvailableProvinces] = useState<
+    Array<{ code: string; name: string }>
+  >([]);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const router = useRouter();
+  const supabase = createClient();
+  const countries = getCountries();
+  const previousCountryRef = useRef<string>(formData.country);
 
   // Update formData when initialProfile changes
   useEffect(() => {
-    setProfile(initialProfile)
+    setProfile(initialProfile);
     setFormData({
-      fullName: initialProfile.full_name || '',
-      username: initialProfile.username || '',
-      email: initialProfile.email || '',
-      phone: initialProfile.phone || '',
-      country: initialProfile.country || '',
-      province: initialProfile.province || '',
-      gender: initialProfile.gender || '',
-    })
-  }, [initialProfile])
+      fullName: initialProfile.full_name || "",
+      username: initialProfile.username || "",
+      email: initialProfile.email || "",
+      phone: initialProfile.phone || "",
+      country: initialProfile.country || "",
+      province: initialProfile.province || "",
+      gender: initialProfile.gender || "",
+    });
+    previousCountryRef.current = initialProfile.country || "";
+  }, [initialProfile]);
 
   useEffect(() => {
+    const countryChanged = previousCountryRef.current !== formData.country;
+    previousCountryRef.current = formData.country;
+
     if (formData.country) {
-      const provinces = getProvincesByCountry(formData.country)
-      setAvailableProvinces(provinces)
+      const provinces = getProvincesByCountry(formData.country);
+      setAvailableProvinces(provinces);
       // Reset province if country changes and current province is not valid
-      if (
-        formData.province &&
-        !provinces.find(
-          (p) => p.code === formData.province || p.name === formData.province
-        )
-      ) {
-        setFormData((prev) => ({ ...prev, province: '' }))
+      if (countryChanged) {
+        setFormData((prev) => {
+          const currentProvince = prev.province;
+          if (
+            currentProvince &&
+            !provinces.find(
+              (p) => p.code === currentProvince || p.name === currentProvince
+            )
+          ) {
+            return { ...prev, province: "" };
+          }
+          return prev;
+        });
       }
     } else {
-      setAvailableProvinces([])
-      if (formData.province) {
-        setFormData((prev) => ({ ...prev, province: '' }))
+      setAvailableProvinces([]);
+      if (countryChanged && formData.province) {
+        setFormData((prev) => ({ ...prev, province: "" }));
       }
     }
-  }, [formData.country])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formData.country]);
 
   async function handleSaveProfile() {
-    setSaving(true)
-    setError(null)
+    setSaving(true);
+    setError(null);
 
     // Ensure username is lowercase before saving
-    const normalizedUsername = formData.username.toLowerCase().replace(/[^a-z0-9_]/g, '')
+    const normalizedUsername = formData.username
+      .toLowerCase()
+      .replace(/[^a-z0-9_]/g, "");
 
     const { error: updateError } = await supabase
-      .from('profiles')
+      .from("profiles")
       .update({
         full_name: formData.fullName,
         username: normalizedUsername,
@@ -112,57 +151,54 @@ export function ProfileForm({ initialProfile, initialGhostPlayers }: ProfileForm
         province: formData.province || null,
         gender: formData.gender || null,
       })
-      .eq('id', profile.id)
+      .eq("id", profile.id);
 
     if (updateError) {
-      setError(updateError.message)
-      setSaving(false)
-      return
+      setError(updateError.message);
+      setSaving(false);
+      return;
     }
 
     // Also update the player record
     await supabase
-      .from('players')
+      .from("players")
       .update({ display_name: formData.fullName || normalizedUsername })
-      .eq('profile_id', profile.id)
+      .eq("profile_id", profile.id);
 
-    setProfile({ 
-      ...profile, 
-      full_name: formData.fullName, 
+    setProfile({
+      ...profile,
+      full_name: formData.fullName,
       username: normalizedUsername,
       email: formData.email || null,
       phone: formData.phone || null,
       country: formData.country || null,
       province: formData.province || null,
       gender: formData.gender || null,
-    })
-    setEditMode(false)
-    setSuccess(true)
-    setSaving(false)
-    setTimeout(() => setSuccess(false), 3000)
+    });
+    setEditMode(false);
+    setSuccess(true);
+    setSaving(false);
+    setTimeout(() => setSuccess(false), 3000);
   }
 
   async function handleAvatarUpload(url: string | null) {
-    setProfile({ ...profile, avatar_url: url })
-    setSuccess(true)
-    setTimeout(() => setSuccess(false), 3000)
+    setProfile({ ...profile, avatar_url: url });
+    setSuccess(true);
+    setTimeout(() => setSuccess(false), 3000);
   }
 
   async function handleDeleteGhost(ghostId: string) {
-    const { error } = await supabase
-      .from('players')
-      .delete()
-      .eq('id', ghostId)
+    const { error } = await supabase.from("players").delete().eq("id", ghostId);
 
     if (!error) {
-      setGhostPlayers(prev => prev.filter(g => g.id !== ghostId))
+      setGhostPlayers((prev) => prev.filter((g) => g.id !== ghostId));
     }
   }
 
   async function handleLogout() {
-    await supabase.auth.signOut()
-    router.push('/login')
-    router.refresh()
+    await supabase.auth.signOut();
+    router.push("/login");
+    router.refresh();
   }
 
   return (
@@ -192,45 +228,51 @@ export function ProfileForm({ initialProfile, initialGhostPlayers }: ProfileForm
                 <AvatarUpload
                   userId={profile.id}
                   currentAvatarUrl={profile.avatar_url}
-                  userName={profile.full_name || profile.username || 'Usuario'}
+                  userName={profile.full_name || profile.username || "Usuario"}
                   onUploadComplete={handleAvatarUpload}
                 />
               ) : (
                 <PlayerAvatar
-                  name={profile.full_name || profile.username || 'Usuario'}
+                  name={profile.full_name || profile.username || "Usuario"}
                   avatarUrl={profile.avatar_url}
                   size="xl"
                   className="ring-4 ring-background"
                 />
               )}
-              
+
               {editMode ? (
                 <div className="mt-4 w-full max-w-xs space-y-4">
                   <div className="space-y-2">
                     <Label>Nombre Completo</Label>
                     <Input
                       value={formData.fullName}
-                      onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, fullName: e.target.value })
+                      }
                     />
                   </div>
                   <div className="space-y-2">
                     <Label>Usuario</Label>
                     <Input
                       value={formData.username}
-                      onChange={(e) => setFormData({ 
-                        ...formData, 
-                        username: e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '') 
-                      })}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          username: e.target.value
+                            .toLowerCase()
+                            .replace(/[^a-z0-9_]/g, ""),
+                        })
+                      }
                     />
                   </div>
                 </div>
               ) : (
                 <>
                   <h2 className="mt-4 text-xl font-bold">
-                    {profile.full_name || profile.username || 'Usuario'}
+                    {profile.full_name || profile.username || "Usuario"}
                   </h2>
                   <p className="text-sm text-muted-foreground">
-                    @{profile.username || 'sin_username'}
+                    @{profile.username || "sin_username"}
                   </p>
                   <div className="mt-3">
                     <EloBadge
@@ -262,7 +304,9 @@ export function ProfileForm({ initialProfile, initialGhostPlayers }: ProfileForm
                       type="email"
                       placeholder="tu@email.com"
                       value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, email: e.target.value })
+                      }
                       className="pl-10"
                     />
                   </div>
@@ -274,7 +318,9 @@ export function ProfileForm({ initialProfile, initialGhostPlayers }: ProfileForm
                     id="phone"
                     placeholder="+54 9 11 1234-5678"
                     value={formData.phone || undefined}
-                    onChange={(value) => setFormData({ ...formData, phone: value || '' })}
+                    onChange={(value: string | undefined) =>
+                      setFormData({ ...formData, phone: value || "" })
+                    }
                   />
                 </div>
 
@@ -284,7 +330,9 @@ export function ProfileForm({ initialProfile, initialGhostPlayers }: ProfileForm
                     <Globe className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground z-10" />
                     <Select
                       value={formData.country}
-                      onValueChange={(value) => setFormData({ ...formData, country: value })}
+                      onValueChange={(value) =>
+                        setFormData({ ...formData, country: value })
+                      }
                     >
                       <SelectTrigger className="pl-10">
                         <SelectValue placeholder="Selecciona tu país" />
@@ -307,14 +355,19 @@ export function ProfileForm({ initialProfile, initialGhostPlayers }: ProfileForm
                       <MapPin className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground z-10" />
                       <Select
                         value={formData.province}
-                        onValueChange={(value) => setFormData({ ...formData, province: value })}
+                        onValueChange={(value) =>
+                          setFormData({ ...formData, province: value })
+                        }
                       >
                         <SelectTrigger className="pl-10">
                           <SelectValue placeholder="Selecciona tu provincia" />
                         </SelectTrigger>
                         <SelectContent>
                           {availableProvinces.map((province) => (
-                            <SelectItem key={province.code} value={province.name}>
+                            <SelectItem
+                              key={province.code}
+                              value={province.name}
+                            >
                               {province.name}
                             </SelectItem>
                           ))}
@@ -330,7 +383,9 @@ export function ProfileForm({ initialProfile, initialGhostPlayers }: ProfileForm
                     <Users className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground z-10" />
                     <Select
                       value={formData.gender}
-                      onValueChange={(value) => setFormData({ ...formData, gender: value })}
+                      onValueChange={(value) =>
+                        setFormData({ ...formData, gender: value })
+                      }
                     >
                       <SelectTrigger className="pl-10">
                         <SelectValue placeholder="Selecciona tu género" />
@@ -339,7 +394,9 @@ export function ProfileForm({ initialProfile, initialGhostPlayers }: ProfileForm
                         <SelectItem value="Masculino">Masculino</SelectItem>
                         <SelectItem value="Femenino">Femenino</SelectItem>
                         <SelectItem value="Otro">Otro</SelectItem>
-                        <SelectItem value="Prefiero no decir">Prefiero no decir</SelectItem>
+                        <SelectItem value="Prefiero no decir">
+                          Prefiero no decir
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -373,7 +430,9 @@ export function ProfileForm({ initialProfile, initialGhostPlayers }: ProfileForm
                   <div className="flex items-center gap-3 text-sm">
                     <Globe className="h-4 w-4 text-muted-foreground" />
                     <span className="text-muted-foreground">País:</span>
-                    <span className="font-medium">{getCountryName(profile.country) || profile.country}</span>
+                    <span className="font-medium">
+                      {getCountryName(profile.country) || profile.country}
+                    </span>
                   </div>
                 )}
                 {profile.province && (
@@ -390,9 +449,15 @@ export function ProfileForm({ initialProfile, initialGhostPlayers }: ProfileForm
                     <span className="font-medium">{profile.gender}</span>
                   </div>
                 )}
-                {!profile.email && !profile.phone && !profile.country && !profile.province && !profile.gender && (
-                  <p className="text-sm text-muted-foreground">No hay información personal disponible</p>
-                )}
+                {!profile.email &&
+                  !profile.phone &&
+                  !profile.country &&
+                  !profile.province &&
+                  !profile.gender && (
+                    <p className="text-sm text-muted-foreground">
+                      No hay información personal disponible
+                    </p>
+                  )}
               </div>
             )}
           </CardContent>
@@ -413,21 +478,25 @@ export function ProfileForm({ initialProfile, initialGhostPlayers }: ProfileForm
                   key={ghost.id}
                   className="flex items-center gap-3 rounded-lg bg-muted/50 p-3"
                 >
-                  <PlayerAvatar
-                    name={ghost.display_name}
-                    isGhost
-                    size="sm"
-                  />
+                  <PlayerAvatar name={ghost.display_name} isGhost size="sm" />
                   <div className="flex-1">
                     <p className="font-medium">{ghost.display_name}</p>
                     <p className="text-xs text-muted-foreground">
                       {ghost.matches_played} partidos
                     </p>
                   </div>
-                  <EloBadge elo={ghost.elo_score} category={ghost.category_label} size="sm" />
+                  <EloBadge
+                    elo={ghost.elo_score}
+                    category={ghost.category_label}
+                    size="sm"
+                  />
                   <Dialog>
                     <DialogTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-destructive"
+                      >
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </DialogTrigger>
@@ -435,7 +504,8 @@ export function ProfileForm({ initialProfile, initialGhostPlayers }: ProfileForm
                       <DialogHeader>
                         <DialogTitle>¿Eliminar jugador?</DialogTitle>
                         <DialogDescription>
-                          Esta acción no se puede deshacer. El jugador será eliminado permanentemente.
+                          Esta acción no se puede deshacer. El jugador será
+                          eliminado permanentemente.
                         </DialogDescription>
                       </DialogHeader>
                       <DialogFooter>
@@ -460,8 +530,9 @@ export function ProfileForm({ initialProfile, initialGhostPlayers }: ProfileForm
           <div>
             <h3 className="mb-2 text-sm font-medium">Partidos históricos</h3>
             <p className="mb-4 text-sm text-muted-foreground">
-              Si jugaste partidos antes de registrarte, puedes vincularlos a tu cuenta buscando por nombre.
-              Revisa los partidos de cada jugador para confirmar que son tuyos.
+              Si jugaste partidos antes de registrarte, puedes vincularlos a tu
+              cuenta buscando por nombre. Revisa los partidos de cada jugador
+              para confirmar que son tuyos.
             </p>
             <ClaimGhostPlayers />
           </div>
@@ -483,6 +554,5 @@ export function ProfileForm({ initialProfile, initialGhostPlayers }: ProfileForm
         </Button>
       </div>
     </>
-  )
+  );
 }
-

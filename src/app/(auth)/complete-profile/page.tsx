@@ -531,7 +531,7 @@ export default function CompleteProfilePage() {
                   id="phone"
                   placeholder="+54 9 11 1234-5678"
                   value={formData.phone || undefined}
-                  onChange={(value) =>
+                  onChange={(value: string | undefined) =>
                     setFormData({ ...formData, phone: value || "" })
                   }
                   required

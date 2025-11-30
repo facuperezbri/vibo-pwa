@@ -1056,7 +1056,7 @@ export default function NewMatchPage() {
                           name={currentUser.display_name}
                           avatarUrl={currentUser.avatar_url}
                           isGhost={currentUser.is_ghost}
-                          size="sm"
+                          size="md"
                           className={`ring-2 ring-background ${
                             winnerTeam === 1 ? "ring-primary" : ""
                           }`}
@@ -1065,7 +1065,7 @@ export default function NewMatchPage() {
                           name={team1Player2.display_name}
                           avatarUrl={team1Player2.avatar_url}
                           isGhost={team1Player2.is_ghost}
-                          size="sm"
+                          size="md"
                           className={`ring-2 ring-background ${
                             winnerTeam === 1 ? "ring-primary" : ""
                           }`}
@@ -1117,7 +1117,7 @@ export default function NewMatchPage() {
                           name={team2Player1.display_name}
                           avatarUrl={team2Player1.avatar_url}
                           isGhost={team2Player1.is_ghost}
-                          size="sm"
+                          size="md"
                           className={`ring-2 ring-background ${
                             winnerTeam === 2 ? "ring-primary" : ""
                           }`}
@@ -1126,7 +1126,7 @@ export default function NewMatchPage() {
                           name={team2Player2.display_name}
                           avatarUrl={team2Player2.avatar_url}
                           isGhost={team2Player2.is_ghost}
-                          size="sm"
+                          size="md"
                           className={`ring-2 ring-background ${
                             winnerTeam === 2 ? "ring-primary" : ""
                           }`}

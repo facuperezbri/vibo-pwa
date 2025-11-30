@@ -1,7 +1,12 @@
 -- Add dynamic K-factor: double points for first 10 matches
 -- This helps new players calibrate their ELO faster
 
-CREATE OR REPLACE FUNCTION calculate_new_elo(
+-- Drop the old version of calculate_new_elo function first to avoid ambiguity
+DROP FUNCTION IF EXISTS calculate_new_elo(FLOAT, FLOAT, BOOLEAN, FLOAT);
+DROP FUNCTION IF EXISTS calculate_new_elo(FLOAT, FLOAT, BOOLEAN);
+
+-- Create the new version with dynamic K-factor based on matches played
+CREATE FUNCTION calculate_new_elo(
   current_elo FLOAT,
   opponent_avg_elo FLOAT,
   won BOOLEAN,

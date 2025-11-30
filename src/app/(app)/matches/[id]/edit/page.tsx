@@ -383,10 +383,9 @@ export default function EditMatchPage({ params }: EditMatchPageProps) {
       await supabase.rpc("update_match_elos", { match_id: match.id });
 
       setSuccess(true);
-      setTimeout(() => {
-        router.push(`/matches/${match.id}`);
-        router.refresh();
-      }, 1500);
+      // Redirect immediately to match detail page
+      router.replace(`/matches/${match.id}`);
+      router.refresh();
     } catch (err) {
       setError("Error al guardar los cambios");
     }

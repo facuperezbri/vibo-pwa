@@ -736,12 +736,10 @@ export default function NewMatchPage() {
     if (hasPlayersToShare) {
       setShowShareDialog(true);
     } else {
-      // Reset form and scroll to top before redirecting
+      // Reset form and redirect immediately
       resetForm();
-      setTimeout(() => {
-        router.push("/");
-        router.refresh();
-      }, 1500);
+      router.replace("/");
+      router.refresh();
     }
   }
 
@@ -1223,7 +1221,7 @@ export default function NewMatchPage() {
               // If dialog is closed and match was successfully created, refresh stats and reset form
               await refreshStats();
               resetForm();
-              router.push("/");
+              router.replace("/");
               router.refresh();
             }
           }}

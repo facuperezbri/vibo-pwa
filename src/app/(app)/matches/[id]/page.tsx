@@ -146,6 +146,8 @@ export default async function MatchDetailPage({ params }: MatchDetailProps) {
             <ScoreDisplay
               sets={scoreSets}
               winnerTeam={match.winner_team}
+              team1Players={[player1, player2]}
+              team2Players={[player3, player4]}
             />
           </CardContent>
         </Card>

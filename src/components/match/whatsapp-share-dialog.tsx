@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import {
   Dialog,
   DialogContent,
@@ -39,8 +40,17 @@ export function WhatsAppShareDialog({
   onComplete,
 }: WhatsAppShareDialogProps) {
   const [copiedId, setCopiedId] = useState<string | null>(null)
+  const router = useRouter()
 
   const baseUrl = typeof window !== 'undefined' ? window.location.origin : ''
+
+  function handleClose() {
+    onComplete()
+    // Always navigate to home page when dialog closes
+    setTimeout(() => {
+      router.push('/')
+    }, 200)
+  }
 
   function getInviteLink(player: SelectedPlayer): string {
     // Find invitation for this player
@@ -126,7 +136,13 @@ export function WhatsAppShareDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={(open) => {
+      if (!open) {
+        handleClose()
+      } else {
+        onOpenChange(open)
+      }
+    }}>
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
@@ -203,7 +219,7 @@ export function WhatsAppShareDialog({
             </Button>
             <Button
               className="flex-1 gap-2"
-              onClick={onComplete}
+              onClick={handleClose}
             >
               <Check className="h-4 w-4" />
               Listo

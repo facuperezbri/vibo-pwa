@@ -1258,13 +1258,12 @@ export default function NewMatchPage() {
             setShowShareDialog(open);
 
             // Execute heavy operations after dialog closes (only if closed and match was created)
+            // Note: Navigation is handled by the WhatsAppShareDialog component itself
             if (!open && success) {
               setTimeout(async () => {
                 // If dialog is closed and match was successfully created, refresh stats and reset form
                 await refreshStats();
                 resetForm();
-                router.replace("/");
-                router.refresh();
               }, 200); // Small delay to allow dialog close animation
             }
           }}

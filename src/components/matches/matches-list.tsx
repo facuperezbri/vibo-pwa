@@ -51,9 +51,16 @@ async function MatchesListContent() {
 
   if (allPlayerIds.length > 0) {
     // Construir la consulta OR para incluir el usuario real y sus ghost players vinculados
-    const orConditions = allPlayerIds
-      .map(id => `player_1_id.eq.${id},player_2_id.eq.${id},player_3_id.eq.${id},player_4_id.eq.${id}`)
-      .join(',')
+    // La sintaxis correcta para Supabase OR es: col1.eq.val1,col2.eq.val2
+    // Necesitamos crear todas las combinaciones posibles de columnas e IDs
+    const orConditions: string[] = []
+    allPlayerIds.forEach(id => {
+      orConditions.push(`player_1_id.eq.${id}`)
+      orConditions.push(`player_2_id.eq.${id}`)
+      orConditions.push(`player_3_id.eq.${id}`)
+      orConditions.push(`player_4_id.eq.${id}`)
+    })
+    const orQuery = orConditions.join(',')
 
     const { data } = await supabase
       .from('matches')
@@ -69,7 +76,7 @@ async function MatchesListContent() {
         player_3:players!matches_player_3_id_fkey(id, display_name, is_ghost, elo_score, category_label, profile_id, profiles!left(avatar_url)),
         player_4:players!matches_player_4_id_fkey(id, display_name, is_ghost, elo_score, category_label, profile_id, profiles!left(avatar_url))
       `)
-      .or(orConditions)
+      .or(orQuery)
       .order('match_date', { ascending: false })
 
     matches = (data || []).map(m => {

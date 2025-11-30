@@ -276,13 +276,14 @@ export default function NewMatchPage() {
     setCurrentUserId(user.id);
 
     // Get current user's player record with avatar
-    const { data: userPlayer } = await supabase
+    // The trigger should have automatically created this when the profile was created
+    const { data: userPlayer, error: playerError } = await supabase
       .from("players")
       .select(
         "id, display_name, is_ghost, elo_score, category_label, profile_id, profiles!left(avatar_url)"
       )
       .eq("profile_id", user.id)
-      .single();
+      .maybeSingle();
 
     if (userPlayer) {
       const playerWithAvatar = {
@@ -295,26 +296,39 @@ export default function NewMatchPage() {
       delete (playerWithAvatar as any).profiles;
       setCurrentUser(playerWithAvatar as SelectedPlayer);
     } else {
-      // If no player record exists, create one from profile
+      // If no player record exists, try to create it as fallback
+      // This handles edge cases like old users created before the trigger existed
+      // The trigger should have automatically created the player record when the profile was created
+      console.warn(
+        "Player record not found for user, attempting to create:",
+        user.id
+      );
+
+      // First verify the profile exists
       const { data: profile } = await supabase
         .from("profiles")
         .select(
           "id, username, full_name, avatar_url, elo_score, category_label"
         )
         .eq("id", user.id)
-        .single();
+        .maybeSingle();
 
       if (profile) {
-        // Create player record if it doesn't exist
+        // Try to create the player record using upsert to avoid conflicts
         const { data: newPlayer, error: createError } = await supabase
           .from("players")
-          .insert({
-            profile_id: user.id,
-            display_name: profile.full_name || profile.username || "Usuario",
-            is_ghost: false,
-            elo_score: profile.elo_score || 1400,
-            category_label: profile.category_label || "6ta",
-          })
+          .upsert(
+            {
+              profile_id: user.id,
+              display_name: profile.full_name || profile.username || "Usuario",
+              is_ghost: false,
+              elo_score: profile.elo_score || 1400,
+              category_label: profile.category_label || "6ta",
+            },
+            {
+              onConflict: "profile_id",
+            }
+          )
           .select(
             "id, display_name, is_ghost, elo_score, category_label, profile_id"
           )
@@ -326,10 +340,19 @@ export default function NewMatchPage() {
             avatar_url: profile.avatar_url,
           };
           setCurrentUser(playerWithAvatar);
-        } else if (createError && createError.code !== "23505") {
-          // If error is not duplicate key, log it
-          console.error("Error creating player:", createError);
+        } else {
+          console.error("Error creating player record:", createError);
+          setError(
+            "No se pudo crear tu registro de jugador. Por favor, contacta al soporte."
+          );
+          setLoading(false);
+          return;
         }
+      } else {
+        console.error("Profile not found for user:", user.id);
+        setError("No se encontró tu perfil. Por favor, contacta al soporte.");
+        setLoading(false);
+        return;
       }
     }
 

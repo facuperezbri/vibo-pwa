@@ -49,15 +49,18 @@ import {
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { ClaimGhostPlayers } from "./claim-ghost-players";
+import { PartnerStatsComponent } from "./partner-stats";
 import { useEditMode } from "./profile-edit-button-wrapper";
 
 interface ProfileFormProps {
   initialProfile: Profile;
+  playerId: string | null;
   initialGhostPlayers: Player[];
 }
 
 export function ProfileForm({
   initialProfile,
+  playerId,
   initialGhostPlayers,
 }: ProfileFormProps) {
   const [saving, setSaving] = useState(false);
@@ -462,6 +465,9 @@ export function ProfileForm({
             )}
           </CardContent>
         </Card>
+
+        {/* Partner Stats */}
+        {playerId && !editMode && <PartnerStatsComponent playerId={playerId} />}
 
         {/* Ghost Players */}
         {ghostPlayers.length > 0 && (

@@ -10,10 +10,11 @@ import type { Player, Profile } from '@/types/database'
 
 interface ProfileContentProps {
   profile: Profile
+  playerId: string | null
   ghostPlayers: Player[]
 }
 
-export function ProfileContent({ profile, ghostPlayers }: ProfileContentProps) {
+export function ProfileContent({ profile, playerId, ghostPlayers }: ProfileContentProps) {
   return (
     <ProfileEditModeProvider>
       <Header
@@ -36,6 +37,7 @@ export function ProfileContent({ profile, ghostPlayers }: ProfileContentProps) {
       />
       <ProfileForm
         initialProfile={profile}
+        playerId={playerId}
         initialGhostPlayers={ghostPlayers}
       />
     </ProfileEditModeProvider>

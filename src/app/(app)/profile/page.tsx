@@ -17,13 +17,19 @@ async function ProfileData() {
     redirect('/login')
   }
 
-  // Load profile and ghost players in parallel
-  const [profileResult, ghostPlayersResult] = await Promise.all([
+  // Load profile, player record, and ghost players in parallel
+  const [profileResult, playerResult, ghostPlayersResult] = await Promise.all([
     supabase
       .from('profiles')
       .select('id, full_name, username, avatar_url, elo_score, category_label, country, province, phone, email, gender')
       .eq('id', user.id)
       .single(),
+    supabase
+      .from('players')
+      .select('id')
+      .eq('profile_id', user.id)
+      .eq('is_ghost', false)
+      .maybeSingle(),
     supabase
       .from('players')
       .select('id, display_name, elo_score, category_label, matches_played')
@@ -33,13 +39,14 @@ async function ProfileData() {
   ])
 
   const profile = profileResult.data as Profile | null
+  const playerRecord = playerResult.data as Player | null
   const ghostPlayers = (ghostPlayersResult.data || []) as Player[]
 
   if (!profile) {
     redirect('/complete-profile')
   }
 
-  return <ProfileContent profile={profile} ghostPlayers={ghostPlayers} />
+  return <ProfileContent profile={profile} playerId={playerRecord?.id || null} ghostPlayers={ghostPlayers} />
 }
 
 export default function ProfilePage() {

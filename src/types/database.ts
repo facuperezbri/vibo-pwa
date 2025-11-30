@@ -54,6 +54,7 @@ export interface Database {
           id: string
           profile_id: string | null
           created_by_user_id: string | null
+          claimed_by_profile_id: string | null
           display_name: string
           is_ghost: boolean
           elo_score: number
@@ -67,6 +68,7 @@ export interface Database {
           id?: string
           profile_id?: string | null
           created_by_user_id?: string | null
+          claimed_by_profile_id?: string | null
           display_name: string
           is_ghost?: boolean
           elo_score?: number
@@ -80,6 +82,7 @@ export interface Database {
           id?: string
           profile_id?: string | null
           created_by_user_id?: string | null
+          claimed_by_profile_id?: string | null
           display_name?: string
           is_ghost?: boolean
           elo_score?: number

@@ -68,20 +68,38 @@ export function DataProvider({ children }: { children: ReactNode }) {
           .eq('profile_id', user.id)
           .maybeSingle()
 
-        if (playerRecord) {
+        // Obtener IDs de ghost players vinculados al usuario
+        const { data: claimedGhostPlayers } = await supabase
+          .from('players')
+          .select('id')
+          .eq('claimed_by_profile_id', user.id)
+          .eq('is_ghost', true)
+
+        const claimedGhostIds = claimedGhostPlayers?.map(p => p.id) || []
+        const allPlayerIds = playerRecord 
+          ? [playerRecord.id, ...claimedGhostIds]
+          : claimedGhostIds
+
+        if (allPlayerIds.length > 0) {
+          // Construir la consulta OR para incluir el usuario real y sus ghost players vinculados
+          const orConditions = allPlayerIds
+            .map(id => `player_1_id.eq.${id},player_2_id.eq.${id},player_3_id.eq.${id},player_4_id.eq.${id}`)
+            .join(',')
+
           const { data: matches } = await supabase
             .from('matches')
             .select('id, match_date, winner_team, elo_changes, player_1_id, player_2_id, player_3_id, player_4_id')
-            .or(`player_1_id.eq.${playerRecord.id},player_2_id.eq.${playerRecord.id},player_3_id.eq.${playerRecord.id},player_4_id.eq.${playerRecord.id}`)
+            .or(orConditions)
             .order('match_date', { ascending: false })
             .limit(5)
 
           recentMatches = (matches || []).map(match => {
+            // Buscar en todos los IDs (usuario real + ghost players vinculados)
             let position = 0
-            if (match.player_1_id === playerRecord.id) position = 1
-            else if (match.player_2_id === playerRecord.id) position = 2
-            else if (match.player_3_id === playerRecord.id) position = 3
-            else if (match.player_4_id === playerRecord.id) position = 4
+            if (allPlayerIds.includes(match.player_1_id)) position = 1
+            else if (allPlayerIds.includes(match.player_2_id)) position = 2
+            else if (allPlayerIds.includes(match.player_3_id)) position = 3
+            else if (allPlayerIds.includes(match.player_4_id)) position = 4
             
             return {
               ...match,

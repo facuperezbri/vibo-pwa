@@ -33,9 +33,26 @@ async function MatchesListContent() {
     .eq('profile_id', user.id)
     .single()
 
+  // Obtener IDs de ghost players vinculados al usuario
+  const { data: claimedGhostPlayers } = await supabase
+    .from('players')
+    .select('id')
+    .eq('claimed_by_profile_id', user.id)
+    .eq('is_ghost', true)
+
+  const claimedGhostIds = claimedGhostPlayers?.map(p => p.id) || []
+  const allPlayerIds = playerRecord 
+    ? [playerRecord.id, ...claimedGhostIds]
+    : claimedGhostIds
+
   let matches: MatchWithPlayers[] = []
 
-  if (playerRecord) {
+  if (allPlayerIds.length > 0) {
+    // Construir la consulta OR para incluir el usuario real y sus ghost players vinculados
+    const orConditions = allPlayerIds
+      .map(id => `player_1_id.eq.${id},player_2_id.eq.${id},player_3_id.eq.${id},player_4_id.eq.${id}`)
+      .join(',')
+
     const { data } = await supabase
       .from('matches')
       .select(`
@@ -50,7 +67,7 @@ async function MatchesListContent() {
         player_3:players!matches_player_3_id_fkey(id, display_name, is_ghost, elo_score, category_label),
         player_4:players!matches_player_4_id_fkey(id, display_name, is_ghost, elo_score, category_label)
       `)
-      .or(`player_1_id.eq.${playerRecord.id},player_2_id.eq.${playerRecord.id},player_3_id.eq.${playerRecord.id},player_4_id.eq.${playerRecord.id}`)
+      .or(orConditions)
       .order('match_date', { ascending: false })
 
     matches = (data || []).map(m => ({
@@ -104,12 +121,12 @@ async function MatchesListContent() {
           </h2>
           <div className="space-y-3">
             {monthMatches.map((match) => {
-              const userPlayerId = playerRecord?.id
+              // Buscar en todos los IDs (usuario real + ghost players vinculados)
               let userPosition = 0
-              if (match.player_1.id === userPlayerId) userPosition = 1
-              else if (match.player_2.id === userPlayerId) userPosition = 2
-              else if (match.player_3.id === userPlayerId) userPosition = 3
-              else if (match.player_4.id === userPlayerId) userPosition = 4
+              if (allPlayerIds.includes(match.player_1.id)) userPosition = 1
+              else if (allPlayerIds.includes(match.player_2.id)) userPosition = 2
+              else if (allPlayerIds.includes(match.player_3.id)) userPosition = 3
+              else if (allPlayerIds.includes(match.player_4.id)) userPosition = 4
               
               const isTeam1 = userPosition <= 2
               const won = (isTeam1 && match.winner_team === 1) || (!isTeam1 && match.winner_team === 2)

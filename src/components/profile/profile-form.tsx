@@ -25,6 +25,7 @@ import { PushNotificationSettings } from '@/components/notifications/push-notifi
 import { Separator } from '@/components/ui/separator'
 import { LogOut } from 'lucide-react'
 import { useEditMode } from './profile-edit-button-wrapper'
+import { ClaimGhostPlayers } from './claim-ghost-players'
 import type { Profile, Player } from '@/types/database'
 
 interface ProfileFormProps {
@@ -244,6 +245,19 @@ export function ProfileForm({ initialProfile, initialGhostPlayers }: ProfileForm
             </CardContent>
           </Card>
         )}
+
+        {/* Historical Matches Claiming */}
+        <div className="space-y-4">
+          <Separator />
+          <div>
+            <h3 className="mb-2 text-sm font-medium">Partidos históricos</h3>
+            <p className="mb-4 text-sm text-muted-foreground">
+              Si jugaste partidos antes de registrarte, puedes vincularlos a tu cuenta buscando por nombre.
+              Revisa los partidos de cada jugador para confirmar que son tuyos.
+            </p>
+            <ClaimGhostPlayers />
+          </div>
+        </div>
 
         {/* Push Notifications */}
         <PushNotificationSettings />

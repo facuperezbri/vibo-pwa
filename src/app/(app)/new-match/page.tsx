@@ -357,14 +357,28 @@ export default function NewMatchPage() {
     }
 
     // Get available players (non-ghost public + user's ghosts) with avatars
-    const { data: players } = await supabase
+    // Query 1: All registered users (non-ghost players)
+    const { data: registeredPlayers } = await supabase
       .from("players")
       .select(
         "id, display_name, is_ghost, elo_score, category_label, profile_id, profiles!left(avatar_url)"
       )
-      .or(`is_ghost.eq.false,created_by_user_id.eq.${user.id}`)
+      .eq("is_ghost", false)
       .neq("profile_id", user.id) // Exclude current user
       .order("display_name");
+
+    // Query 2: Ghost players created by current user
+    const { data: ghostPlayers } = await supabase
+      .from("players")
+      .select(
+        "id, display_name, is_ghost, elo_score, category_label, profile_id, profiles!left(avatar_url)"
+      )
+      .eq("is_ghost", true)
+      .eq("created_by_user_id", user.id)
+      .order("display_name");
+
+    // Combine both results
+    const players = [...(registeredPlayers || []), ...(ghostPlayers || [])];
 
     // Map players to include avatar_url
     const playersWithAvatars = (players || []).map((player) => {

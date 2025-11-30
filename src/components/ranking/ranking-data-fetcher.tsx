@@ -1,8 +1,8 @@
 'use client'
 
 import { RankingContent } from './ranking-content'
-import { RankingSkeleton } from './ranking-content'
 import { useRanking } from '@/lib/react-query/hooks'
+import { PadelBallLoader } from '@/components/ui/padel-ball-loader'
 
 export function RankingContentWrapper() {
   const { data, isLoading, error, isFetching } = useRanking()
@@ -11,7 +11,11 @@ export function RankingContentWrapper() {
   const shouldShowSkeleton = isLoading && !data
 
   if (shouldShowSkeleton) {
-    return <RankingSkeleton />
+    return (
+      <div className="flex h-[60vh] items-center justify-center">
+        <PadelBallLoader size="lg" />
+      </div>
+    )
   }
 
   if (error) {

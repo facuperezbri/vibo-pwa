@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PlayerAvatar } from "@/components/ui/player-avatar";
-import { Skeleton } from "@/components/ui/skeleton";
+import { PadelBallLoader } from "@/components/ui/padel-ball-loader";
 import { useCurrentPlayer, usePlayerMatches } from "@/lib/react-query/hooks";
 import { TrendingDown, Trophy } from "lucide-react";
 import Link from "next/link";
@@ -20,16 +20,8 @@ export function RecentMatches() {
   if (isLoading) {
     return (
       <Card>
-        <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
-            <div className="h-5 w-32 bg-muted rounded animate-pulse" />
-            <div className="h-4 w-16 bg-muted rounded animate-pulse" />
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-2">
-          {[1, 2, 3].map((i) => (
-            <Skeleton key={i} className="h-16 w-full" />
-          ))}
+        <CardContent className="flex h-[200px] items-center justify-center">
+          <PadelBallLoader size="md" />
         </CardContent>
       </Card>
     );

@@ -1,8 +1,8 @@
 'use client'
 
 import { ProfileContent } from '@/components/profile/profile-content'
-import { ProfileSkeleton } from '@/components/skeletons/profile-skeleton'
 import { Header } from '@/components/layout/header'
+import { PadelBallLoader } from '@/components/ui/padel-ball-loader'
 import { Button } from '@/components/ui/button'
 import { HelpCircle } from 'lucide-react'
 import Link from 'next/link'
@@ -43,7 +43,9 @@ export default function ProfilePage() {
             </div>
           }
         />
-        <ProfileSkeleton />
+        <div className="flex h-[60vh] items-center justify-center">
+          <PadelBallLoader size="lg" />
+        </div>
       </>
     )
   }

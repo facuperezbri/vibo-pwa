@@ -121,12 +121,6 @@ export default function ShareMatchPage({ params }: ShareMatchPageProps) {
         return;
       }
 
-      if (matchError || !matchData) {
-        setError("Partido no encontrado");
-        setLoading(false);
-        return;
-      }
-
       // Get avatars for non-ghost players
       const profileIds = new Set<string>();
       [player_1, player_2, player_3, player_4].forEach((player) => {

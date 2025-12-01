@@ -84,6 +84,9 @@ type SelectedPlayer = Pick<
   avatar_url?: string | null;
 };
 
+// Maximum days allowed for backdating matches
+const MAX_BACKDATE_DAYS = 30;
+
 export default function NewMatchPage() {
   const [loading, setLoading] = useState(false);
   const [savingMatch, setSavingMatch] = useState(false);
@@ -671,6 +674,26 @@ export default function NewMatchPage() {
   async function handleSubmit() {
     if (!currentUser || !team1Player2 || !team2Player1 || !team2Player2) {
       setError("Seleccioná los 4 jugadores");
+      return;
+    }
+
+    // Validate match date is not too old
+    const selectedDate = new Date(`${matchDate}T${matchTime}:00`);
+    const today = new Date();
+    const daysDiff = Math.floor(
+      (today.getTime() - selectedDate.getTime()) / (1000 * 60 * 60 * 24)
+    );
+
+    if (daysDiff > MAX_BACKDATE_DAYS) {
+      setError(
+        `Solo podés cargar partidos de los últimos ${MAX_BACKDATE_DAYS} días`
+      );
+      return;
+    }
+
+    // Validate match date is not in the future
+    if (selectedDate > today) {
+      setError("No podés cargar partidos con fecha futura");
       return;
     }
 

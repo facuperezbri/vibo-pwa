@@ -48,6 +48,7 @@ import {
   User,
   Users,
 } from "lucide-react";
+import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -262,7 +263,13 @@ export default function CompleteProfilePage() {
     <div className="flex min-h-screen flex-col items-center justify-center p-4">
       {/* Logo/Brand */}
       <div className="mb-6 flex flex-col items-center">
-        <h1 className="text-xl font-bold">Vibo</h1>
+        <Image
+          src="/icon-192.png"
+          alt="Vibo"
+          width={64}
+          height={64}
+          className="rounded-xl"
+        />
       </div>
 
       <Card className="w-full max-w-sm border-0 bg-card/50 backdrop-blur">

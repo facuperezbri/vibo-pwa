@@ -27,14 +27,8 @@ export const metadata: Metadata = {
     title: "Vibo",
   },
   icons: {
-    icon: [
-      { url: "/icon-192.svg", type: "image/svg+xml" },
-      { url: "/icon-192.png", type: "image/png", sizes: "192x192" },
-    ],
-    apple: [
-      { url: "/apple-icon.svg", type: "image/svg+xml" },
-      { url: "/apple-icon.png", type: "image/png", sizes: "180x180" },
-    ],
+    icon: [{ url: "/icon-192.png", type: "image/png", sizes: "192x192" }],
+    apple: [{ url: "/apple-icon.png", type: "image/png", sizes: "180x180" }],
   },
 };
 

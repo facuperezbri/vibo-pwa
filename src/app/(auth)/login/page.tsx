@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createClient } from "@/lib/supabase/client";
 import { Loader2, Lock, Mail } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -105,8 +106,14 @@ export default function LoginPage() {
     <div className="flex min-h-screen flex-col items-center justify-center p-4">
       {/* Logo/Brand */}
       <div className="mb-8 flex flex-col items-center">
-        <h1 className="text-2xl font-bold">Vibo</h1>
-        <p className="text-sm text-muted-foreground">
+        <Image
+          src="/icon-192.png"
+          alt="Vibo"
+          width={80}
+          height={80}
+          className="rounded-2xl"
+        />
+        <p className="mt-3 text-sm text-muted-foreground">
           Tu ranking, tus partidos
         </p>
       </div>

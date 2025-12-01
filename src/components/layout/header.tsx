@@ -2,11 +2,13 @@
 
 import { Button } from "@/components/ui/button";
 import { ChevronLeft } from "lucide-react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 
 interface HeaderProps {
   title: string;
   showBack?: boolean;
+  showLogo?: boolean;
   rightAction?: React.ReactNode;
   onBackClick?: () => void;
 }
@@ -14,6 +16,7 @@ interface HeaderProps {
 export function Header({
   title,
   showBack = false,
+  showLogo = false,
   rightAction,
   onBackClick,
 }: HeaderProps) {
@@ -41,7 +44,16 @@ export function Header({
               <ChevronLeft className="h-5 w-5" />
             </Button>
           )}
-          <h1 className="text-lg font-semibold">{title}</h1>
+          {showLogo && (
+            <Image
+              src="/icon-192.png"
+              alt="Vibo"
+              width={32}
+              height={32}
+              className="rounded-lg"
+            />
+          )}
+          {!showLogo && <h1 className="text-lg font-semibold">{title}</h1>}
         </div>
         {rightAction && <div>{rightAction}</div>}
       </div>

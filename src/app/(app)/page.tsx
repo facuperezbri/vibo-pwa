@@ -24,7 +24,7 @@ export default async function HomePage() {
   return (
     <>
       <HomeRefresh />
-      <Header title="Vibo" />
+      <Header title="Vibo" showLogo />
 
       <div className="space-y-6 p-4">
         <ProfileSummary />

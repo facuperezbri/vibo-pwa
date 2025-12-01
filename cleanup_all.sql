@@ -1,5 +1,5 @@
 -- ============================================
--- Padelio - Complete Database Cleanup Script
+-- Vibo - Complete Database Cleanup Script
 -- ============================================
 -- This script deletes ALL data from the database
 -- Use with caution! This is irreversible.

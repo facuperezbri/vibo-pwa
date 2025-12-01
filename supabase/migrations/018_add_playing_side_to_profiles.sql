@@ -1,5 +1,5 @@
 -- ============================================
--- Padelio - Add Playing Side Field to Profiles
+-- Vibo - Add Playing Side Field to Profiles
 -- ============================================
 -- Adds playing_side field to profiles table to store if player plays Drive or Revés
 -- ============================================

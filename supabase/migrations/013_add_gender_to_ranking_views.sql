@@ -1,5 +1,5 @@
 -- ============================================
--- Padelio - Add Gender to Ranking Views
+-- Vibo - Add Gender to Ranking Views
 -- ============================================
 -- Adds gender field to ranking views for filtering
 -- ============================================

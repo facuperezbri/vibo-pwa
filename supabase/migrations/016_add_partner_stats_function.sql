@@ -1,5 +1,5 @@
 -- ============================================
--- Padelio - Partner Stats Function
+-- Vibo - Partner Stats Function
 -- ============================================
 -- Function to calculate partner statistics (Química de Pareja)
 -- Analyzes match history and calculates win/loss stats with each partner

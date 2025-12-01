@@ -1,5 +1,5 @@
 -- ============================================
--- Padelio - Add Location and Contact Fields to Profiles
+-- Vibo - Add Location and Contact Fields to Profiles
 -- ============================================
 -- Adds country, province, phone, and email fields to profiles table
 -- ============================================

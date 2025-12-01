@@ -17,14 +17,14 @@ const fontMono = {
 };
 
 export const metadata: Metadata = {
-  title: "Padelio",
+  title: "Vibo",
   description:
     "Track your padel matches, calculate score rankings, and compete with friends",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "Padelio",
+    title: "Vibo",
   },
   icons: {
     icon: [

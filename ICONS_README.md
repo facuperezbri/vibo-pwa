@@ -54,7 +54,7 @@ Los SVG actuales son placeholders simples con:
 
 - Fondo verde (#22c55e) - color primario de la app
 - Icono de raqueta de padel
-- Texto "P" o "Padelio"
+- Texto "P" o "Vibo"
 
 ### Para crear tus propios iconos:
 

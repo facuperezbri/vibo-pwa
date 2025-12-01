@@ -1,5 +1,5 @@
 -- ============================================
--- Padelio - Storage Setup for Avatars
+-- Vibo - Storage Setup for Avatars
 -- ============================================
 -- Run this in Supabase SQL Editor
 -- ============================================

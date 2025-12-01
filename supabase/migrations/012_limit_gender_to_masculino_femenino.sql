@@ -1,5 +1,5 @@
 -- ============================================
--- Padelio - Limit Gender to Masculino/Femenino Only
+-- Vibo - Limit Gender to Masculino/Femenino Only
 -- ============================================
 -- Restricts gender field to only 'Masculino' or 'Femenino' (or NULL)
 -- Removes 'Otro' and 'Prefiero no decir' options

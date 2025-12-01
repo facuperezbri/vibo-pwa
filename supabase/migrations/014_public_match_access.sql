@@ -1,5 +1,5 @@
 -- ============================================
--- Padelio - Public Match Access for Sharing
+-- Vibo - Public Match Access for Sharing
 -- ============================================
 -- Allows public access to matches via share links
 -- ============================================

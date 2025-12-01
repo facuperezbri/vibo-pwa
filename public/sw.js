@@ -1,6 +1,6 @@
-// Padelio Service Worker for Push Notifications
+// Vibo Service Worker for Push Notifications
 
-const CACHE_NAME = "padelio-v1";
+const CACHE_NAME = "vibo-v1";
 const urlsToCache = ["/", "/manifest.json"];
 
 // Install event - cache essential files
@@ -46,12 +46,12 @@ self.addEventListener("push", (event) => {
         ...data.data,
       },
       actions: data.actions || [],
-      tag: data.tag || "padelio-notification",
+      tag: data.tag || "vibo-notification",
       renotify: true,
     };
 
     event.waitUntil(
-      self.registration.showNotification(data.title || "Padelio", options)
+      self.registration.showNotification(data.title || "Vibo", options)
     );
   } catch (error) {
     console.error("Error showing notification:", error);

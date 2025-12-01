@@ -1,6 +1,6 @@
 {
-  "name": "Padelio",
-  "short_name": "Padelio",
+  "name": "Vibo",
+  "short_name": "Vibo",
   "description": "Track your padel matches, calculate ELO rankings, and compete with friends",
   "start_url": "/",
   "display": "standalone",

@@ -1,5 +1,5 @@
 -- ============================================
--- Padelio - Fix OAuth User Creation Trigger
+-- Vibo - Fix OAuth User Creation Trigger
 -- ============================================
 -- This fixes the trigger to handle OAuth users properly
 -- ============================================

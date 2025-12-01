@@ -1,5 +1,5 @@
 -- ============================================
--- Padelio - Add Time Support to Matches
+-- Vibo - Add Time Support to Matches
 -- ============================================
 -- This migration changes match_date from DATE to TIMESTAMPTZ
 -- to support both date and time for matches

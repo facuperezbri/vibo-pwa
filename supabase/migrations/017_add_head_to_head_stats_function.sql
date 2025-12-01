@@ -1,5 +1,5 @@
 -- ============================================
--- Padelio - Head-to-Head Stats Function
+-- Vibo - Head-to-Head Stats Function
 -- ============================================
 -- Function to calculate head-to-head statistics between two players
 -- Analyzes match history where both players faced each other (opposite teams)

@@ -1,5 +1,5 @@
 -- ============================================
--- Padelio - Initial Database Schema
+-- Vibo - Initial Database Schema
 -- ============================================
 -- This is the base schema that must be run FIRST
 -- Run migrations 001-006 after this

@@ -43,7 +43,7 @@
   </g>
   
   <!-- Brand Text -->
-  <text x="256" y="400" font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif" font-size="72" font-weight="700" fill="white" text-anchor="middle" letter-spacing="-1">Padelio</text>
+  <text x="256" y="400" font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif" font-size="72" font-weight="700" fill="white" text-anchor="middle" letter-spacing="-1">Vibo</text>
   
   <!-- Accent dot -->
   <circle cx="256" cy="430" r="4" fill="white" opacity="0.8"/>

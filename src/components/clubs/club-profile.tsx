@@ -81,6 +81,9 @@ export function ClubProfile() {
 
       {/* Actions */}
       <div className="space-y-2">
+        <Button className="w-full" variant="outline" asChild>
+          <a href="/club/staff">Gestionar Staff</a>
+        </Button>
         <Button className="w-full" variant="outline">
           Editar Perfil
         </Button>

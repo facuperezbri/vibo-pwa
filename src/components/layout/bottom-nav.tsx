@@ -4,11 +4,9 @@ import { useNavigation } from "@/contexts/navigation-context";
 import { cn } from "@/lib/utils";
 import { useProfile } from "@/lib/react-query/hooks";
 import { isPlayerProfileComplete } from "@/lib/profile-utils";
-import { createClient } from "@/lib/supabase/client";
-import type { User } from "@supabase/supabase-js";
 import { History, Home, Plus, Trophy, User as UserIcon } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 
 const navItems = [
   {
@@ -44,31 +42,14 @@ export function BottomNav() {
   const router = useRouter();
   const { handleNavigation: handleNavigationWithConfirm } = useNavigation();
   const { data: profileData } = useProfile();
-  const [isProfileIncomplete, setIsProfileIncomplete] = useState(false);
-  const [user, setUser] = useState<User | null>(null);
 
-  // Get current user
-  useEffect(() => {
-    async function getUser() {
-      const supabase = createClient();
-      const {
-        data: { user: currentUser },
-      } = await supabase.auth.getUser();
-      setUser(currentUser);
+  // Calculate badge visibility with useMemo to avoid unnecessary re-renders
+  const showProfileBadge = useMemo(() => {
+    if (!profileData?.profile || !profileData?.user) {
+      return false;
     }
-    getUser();
-  }, []);
-
-  // Check if profile is incomplete
-  useEffect(() => {
-    if (!profileData?.profile || !user) {
-      setIsProfileIncomplete(false);
-      return;
-    }
-
-    const incomplete = !isPlayerProfileComplete(profileData.profile, user);
-    setIsProfileIncomplete(incomplete);
-  }, [profileData, user]);
+    return !isPlayerProfileComplete(profileData.profile, profileData.user);
+  }, [profileData?.profile, profileData?.user]);
 
   // Prefetch all routes immediately on mount (like React Router)
   useEffect(() => {
@@ -77,14 +58,17 @@ export function BottomNav() {
     });
   }, [router]);
 
-  const handleNavigation = (href: string) => {
-    if (pathname === href) return;
+  const handleNavigation = useCallback(
+    (href: string) => {
+      if (pathname === href) return;
 
-    // Use navigation context to check for unsaved data before navigating
-    handleNavigationWithConfirm(() => {
-      router.push(href);
-    });
-  };
+      // Use navigation context to check for unsaved data before navigating
+      handleNavigationWithConfirm(() => {
+        router.push(href);
+      });
+    },
+    [pathname, router, handleNavigationWithConfirm]
+  );
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-background/80 backdrop-blur-lg safe-area-inset-bottom">
@@ -110,7 +94,7 @@ export function BottomNav() {
             );
           }
 
-          const showBadge = item.href === "/profile" && isProfileIncomplete;
+          const showBadge = item.href === "/profile" && showProfileBadge;
 
           return (
             <button

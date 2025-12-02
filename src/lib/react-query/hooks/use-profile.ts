@@ -2,11 +2,13 @@ import { useQuery } from '@tanstack/react-query'
 import { createClient } from '@/lib/supabase/client'
 import { QUERY_STALE_TIME } from '@/lib/constants'
 import type { Player, Profile } from '@/types/database'
+import type { User } from '@supabase/supabase-js'
 
 interface ProfileData {
   profile: Profile
   playerId: string | null
   ghostPlayers: Player[]
+  user: User | null
 }
 
 export function useProfile() {
@@ -65,7 +67,8 @@ export function useProfile() {
       return {
         profile,
         playerId: playerRecord?.id || null,
-        ghostPlayers
+        ghostPlayers,
+        user
       }
     },
     staleTime: QUERY_STALE_TIME,

@@ -22,6 +22,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PadelBallLoader } from "@/components/ui/padel-ball-loader";
 import { PhoneInput } from "@/components/ui/phone-input";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -38,6 +39,7 @@ import {
   type PlayerCategory,
 } from "@/types/database";
 import {
+  Building2,
   Globe,
   Info,
   Loader2,
@@ -51,8 +53,10 @@ import {
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import type { UserType } from "@/types/database";
 
 export default function CompleteProfilePage() {
+  const [userType, setUserType] = useState<UserType | null>(null);
   const [formData, setFormData] = useState({
     fullName: "",
     username: "",
@@ -63,6 +67,16 @@ export default function CompleteProfilePage() {
     email: "",
     gender: "",
     playingSide: "" as "Drive" | "Revés" | "",
+    // Club-specific fields
+    clubName: "",
+    clubSlug: "",
+    clubDescription: "",
+    clubCity: "",
+    clubProvince: "",
+    clubPhone: "",
+    clubEmail: "",
+    clubWebsite: "",
+    clubInstagram: "",
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -99,19 +113,33 @@ export default function CompleteProfilePage() {
       .eq("id", user.id)
       .single();
 
-    // Check if profile is complete (has category and required fields)
-    if (
-      profile &&
-      profile.category_label &&
-      profile.country &&
-      profile.province &&
-      (profile.email || user.email) &&
-      profile.phone &&
-      profile.gender
-    ) {
-      // Profile already complete, redirect
-      router.push("/");
-      return;
+    // Check if profile is complete
+    if (profile) {
+      if (profile.user_type === "player") {
+        const isPlayerComplete =
+          profile.category_label &&
+          profile.country &&
+          profile.province &&
+          (profile.email || user.email) &&
+          profile.phone &&
+          profile.gender;
+        if (isPlayerComplete) {
+          router.push("/");
+          return;
+        }
+        setUserType("player");
+      } else if (profile.user_type === "club") {
+        const isClubComplete =
+          profile.country &&
+          profile.province &&
+          (profile.email || user.email) &&
+          profile.phone;
+        if (isClubComplete) {
+          router.push("/club/dashboard");
+          return;
+        }
+        setUserType("club");
+      }
     }
 
     // Pre-fill with OAuth data
@@ -187,66 +215,143 @@ export default function CompleteProfilePage() {
     const {
       data: { user },
     } = await supabase.auth.getUser();
-    if (!user) return;
-
-    const initialElo = CATEGORY_ELO_MAP[formData.category];
+    if (!user || !userType) return;
 
     try {
-      // Ensure username is lowercase before saving
-      const normalizedUsername = formData.username
-        ? formData.username.toLowerCase().replace(/[^a-z0-9_]/g, "")
-        : null;
+      if (userType === "player") {
+        const initialElo = CATEGORY_ELO_MAP[formData.category];
 
-      // Update profile
-      const updateData: any = {
-        full_name: formData.fullName || null,
-        username: normalizedUsername,
-        elo_score: initialElo,
-        category_label: formData.category,
-        country: formData.country || null,
-        province: formData.province || null,
-        gender: formData.gender || null,
-        playing_side: formData.playingSide || null,
-      };
+        // Ensure username is lowercase before saving
+        const normalizedUsername = formData.username
+          ? formData.username.toLowerCase().replace(/[^a-z0-9_]/g, "")
+          : null;
 
-      // Only update email/phone if they were provided (not from OAuth)
-      if (!hasOAuthEmail && formData.email) {
-        updateData.email = formData.email;
-      } else if (hasOAuthEmail && user.email) {
-        updateData.email = user.email;
-      }
-
-      if (!hasOAuthPhone && formData.phone) {
-        updateData.phone = formData.phone;
-      } else if (hasOAuthPhone) {
-        updateData.phone = formData.phone;
-      }
-
-      const { error: updateError } = await supabase
-        .from("profiles")
-        .update(updateData)
-        .eq("id", user.id);
-
-      if (updateError) {
-        setError(updateError.message);
-        setSaving(false);
-        return;
-      }
-
-      // Update player record
-      await supabase
-        .from("players")
-        .update({
-          display_name: formData.fullName || formData.username || "Usuario",
+        // Update profile
+        const updateData: any = {
+          user_type: "player",
+          full_name: formData.fullName || null,
+          username: normalizedUsername,
           elo_score: initialElo,
           category_label: formData.category,
-        })
-        .eq("profile_id", user.id);
+          country: formData.country || null,
+          province: formData.province || null,
+          gender: formData.gender || null,
+          playing_side: formData.playingSide || null,
+        };
 
-      router.push("/");
-      router.refresh();
-    } catch {
-      setError("Error al completar el perfil");
+        // Only update email/phone if they were provided (not from OAuth)
+        if (!hasOAuthEmail && formData.email) {
+          updateData.email = formData.email;
+        } else if (hasOAuthEmail && user.email) {
+          updateData.email = user.email;
+        }
+
+        if (!hasOAuthPhone && formData.phone) {
+          updateData.phone = formData.phone;
+        } else if (hasOAuthPhone) {
+          updateData.phone = formData.phone;
+        }
+
+        const { error: updateError } = await supabase
+          .from("profiles")
+          .update(updateData)
+          .eq("id", user.id);
+
+        if (updateError) {
+          setError(updateError.message);
+          setSaving(false);
+          return;
+        }
+
+        // Update player record
+        await supabase
+          .from("players")
+          .update({
+            display_name: formData.fullName || formData.username || "Usuario",
+            elo_score: initialElo,
+            category_label: formData.category,
+          })
+          .eq("profile_id", user.id);
+
+        router.push("/");
+        router.refresh();
+      } else if (userType === "club") {
+        // Generate slug from club name
+        const clubSlug = formData.clubSlug
+          ? formData.clubSlug
+              .toLowerCase()
+              .normalize("NFD")
+              .replace(/[\u0300-\u036f]/g, "")
+              .replace(/[^a-z0-9]+/g, "-")
+              .replace(/(^-|-$)/g, "")
+          : formData.clubName
+              .toLowerCase()
+              .normalize("NFD")
+              .replace(/[\u0300-\u036f]/g, "")
+              .replace(/[^a-z0-9]+/g, "-")
+              .replace(/(^-|-$)/g, "");
+
+        // Update profile
+        const updateData: any = {
+          user_type: "club",
+          full_name: formData.clubName || null,
+          username: clubSlug || null,
+          country: formData.country || "Argentina",
+          province: formData.province || null,
+        };
+
+        if (!hasOAuthEmail && formData.clubEmail) {
+          updateData.email = formData.clubEmail;
+        } else if (hasOAuthEmail && user.email) {
+          updateData.email = user.email;
+        }
+
+        if (!hasOAuthPhone && formData.clubPhone) {
+          updateData.phone = formData.clubPhone;
+        } else if (hasOAuthPhone) {
+          updateData.phone = formData.phone;
+        }
+
+        const { error: updateError } = await supabase
+          .from("profiles")
+          .update(updateData)
+          .eq("id", user.id);
+
+        if (updateError) {
+          setError(updateError.message);
+          setSaving(false);
+          return;
+        }
+
+        // Create club using the function
+        const { data: clubId, error: clubError } = await supabase.rpc(
+          "create_club_account",
+          {
+            p_name: formData.clubName,
+            p_slug: clubSlug,
+            p_description: formData.clubDescription || null,
+            p_city: formData.clubCity || null,
+            p_province: formData.province || null,
+            p_country: formData.country || "Argentina",
+            p_phone: formData.clubPhone || null,
+            p_email: formData.clubEmail || user.email || null,
+            p_website: formData.clubWebsite || null,
+            p_instagram: formData.clubInstagram || null,
+            p_is_public: true,
+          }
+        );
+
+        if (clubError) {
+          setError(clubError.message);
+          setSaving(false);
+          return;
+        }
+
+        router.push("/club/dashboard");
+        router.refresh();
+      }
+    } catch (err: any) {
+      setError(err.message || "Error al completar el perfil");
       setSaving(false);
     }
   }
@@ -255,6 +360,69 @@ export default function CompleteProfilePage() {
     return (
       <div className="flex min-h-screen items-center justify-center p-4">
         <PadelBallLoader size="lg" />
+      </div>
+    );
+  }
+
+  // Show user type selection if not selected yet
+  if (!userType) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center p-4">
+        <div className="mb-6 flex flex-col items-center">
+          <Image
+            src="/icon-192.png"
+            alt="Vibo"
+            width={64}
+            height={64}
+            className="rounded-xl"
+          />
+        </div>
+
+        <Card className="w-full max-w-sm border-0 bg-card/50 backdrop-blur">
+          <CardHeader className="space-y-1 pb-4 text-center">
+            <CardTitle className="text-xl">Elegí tu Tipo de Cuenta</CardTitle>
+            <CardDescription>
+              ¿Cómo querés usar Vibo?
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <button
+              type="button"
+              onClick={() => setUserType("player")}
+              className="w-full rounded-lg border-2 border-border p-6 text-left transition-colors hover:border-primary hover:bg-primary/5"
+            >
+              <div className="flex items-center gap-4">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+                  <User className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                  <h3 className="font-semibold">Jugador</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Registrá partidos y competí con otros jugadores
+                  </p>
+                </div>
+              </div>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setUserType("club")}
+              className="w-full rounded-lg border-2 border-border p-6 text-left transition-colors hover:border-primary hover:bg-primary/5"
+            >
+              <div className="flex items-center gap-4">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+                  <Building2 className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                  <h3 className="font-semibold">Club</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Gestioná torneos y organizá eventos
+                  </p>
+                </div>
+              </div>
+            </button>
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -276,7 +444,9 @@ export default function CompleteProfilePage() {
         <CardHeader className="space-y-1 pb-4 text-center">
           <CardTitle className="text-xl">Completá tu Perfil</CardTitle>
           <CardDescription>
-            Necesitamos algunos datos para empezar
+            {userType === "player"
+              ? "Necesitamos algunos datos para empezar"
+              : "Completá la información de tu club"}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -287,8 +457,10 @@ export default function CompleteProfilePage() {
               </Alert>
             )}
 
-            <div className="space-y-2">
-              <Label htmlFor="fullName">Nombre Completo</Label>
+            {userType === "player" ? (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="fullName">Nombre Completo</Label>
               <div className="relative">
                 <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
@@ -603,14 +775,192 @@ export default function CompleteProfilePage() {
               </p>
             </div>
 
-            <div className="space-y-2 pt-2">
-              <Label>Vincular partidos históricos</Label>
-              <p className="text-xs text-muted-foreground mb-2">
-                Si ya tenés partidos registrados como jugador invitado, podés
-                vincularlos a tu cuenta ahora.
-              </p>
-              <ClaimGhostPlayers />
-            </div>
+                <div className="space-y-2 pt-2">
+                  <Label>Vincular partidos históricos</Label>
+                  <p className="text-xs text-muted-foreground mb-2">
+                    Si ya tenés partidos registrados como jugador invitado, podés
+                    vincularlos a tu cuenta ahora.
+                  </p>
+                  <ClaimGhostPlayers />
+                </div>
+              </>
+            ) : (
+              <>
+                {/* Club Form */}
+                <div className="space-y-2">
+                  <Label htmlFor="clubName">Nombre del Club *</Label>
+                  <div className="relative">
+                    <Building2 className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <Input
+                      id="clubName"
+                      type="text"
+                      placeholder="Club de Padel Ejemplo"
+                      value={formData.clubName}
+                      onChange={(e) =>
+                        setFormData({ ...formData, clubName: e.target.value })
+                      }
+                      className="pl-10"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="clubSlug">Slug (URL) *</Label>
+                  <Input
+                    id="clubSlug"
+                    type="text"
+                    placeholder="club-de-padel-ejemplo"
+                    value={formData.clubSlug}
+                    onChange={(e) =>
+                      setFormData({ ...formData, clubSlug: e.target.value })
+                    }
+                    required
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Se usará en la URL de tu club
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="clubDescription">Descripción</Label>
+                  <Textarea
+                    id="clubDescription"
+                    placeholder="Descripción del club..."
+                    value={formData.clubDescription}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        clubDescription: e.target.value,
+                      })
+                    }
+                    rows={3}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="country">País</Label>
+                  <div className="relative">
+                    <Globe className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <Select
+                      value={formData.country}
+                      onValueChange={(value) =>
+                        setFormData({ ...formData, country: value })
+                      }
+                    >
+                      <SelectTrigger className="pl-10">
+                        <SelectValue placeholder="Selecciona el país" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {countries.map((country) => (
+                          <SelectItem key={country.code} value={country.code}>
+                            {country.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                {formData.country && availableProvinces.length > 0 && (
+                  <div className="space-y-2">
+                    <Label htmlFor="province">Provincia</Label>
+                    <div className="relative">
+                      <MapPin className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                      <Select
+                        value={formData.province}
+                        onValueChange={(value) =>
+                          setFormData({ ...formData, province: value })
+                        }
+                      >
+                        <SelectTrigger className="pl-10">
+                          <SelectValue placeholder="Selecciona la provincia" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {availableProvinces.map((province) => (
+                            <SelectItem key={province.code} value={province.name}>
+                              {province.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                )}
+
+                <div className="space-y-2">
+                  <Label htmlFor="clubCity">Ciudad</Label>
+                  <Input
+                    id="clubCity"
+                    type="text"
+                    placeholder="Buenos Aires"
+                    value={formData.clubCity}
+                    onChange={(e) =>
+                      setFormData({ ...formData, clubCity: e.target.value })
+                    }
+                  />
+                </div>
+
+                {!hasOAuthEmail && (
+                  <div className="space-y-2">
+                    <Label htmlFor="clubEmail">Email</Label>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                      <Input
+                        id="clubEmail"
+                        type="email"
+                        placeholder="club@email.com"
+                        value={formData.clubEmail}
+                        onChange={(e) =>
+                          setFormData({ ...formData, clubEmail: e.target.value })
+                        }
+                        className="pl-10"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {!hasOAuthPhone && (
+                  <div className="space-y-2">
+                    <Label htmlFor="clubPhone">Teléfono</Label>
+                    <PhoneInput
+                      id="clubPhone"
+                      placeholder="+54 9 11 1234-5678"
+                      value={formData.clubPhone || undefined}
+                      onChange={(value: string | undefined) =>
+                        setFormData({ ...formData, clubPhone: value || "" })
+                      }
+                    />
+                  </div>
+                )}
+
+                <div className="space-y-2">
+                  <Label htmlFor="clubWebsite">Sitio Web</Label>
+                  <Input
+                    id="clubWebsite"
+                    type="url"
+                    placeholder="https://ejemplo.com"
+                    value={formData.clubWebsite}
+                    onChange={(e) =>
+                      setFormData({ ...formData, clubWebsite: e.target.value })
+                    }
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="clubInstagram">Instagram</Label>
+                  <Input
+                    id="clubInstagram"
+                    type="text"
+                    placeholder="@clubpadel"
+                    value={formData.clubInstagram}
+                    onChange={(e) =>
+                      setFormData({ ...formData, clubInstagram: e.target.value })
+                    }
+                  />
+                </div>
+              </>
+            )}
 
             <Button
               type="submit"

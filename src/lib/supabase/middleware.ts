@@ -71,13 +71,23 @@ export async function updateSession(request: NextRequest) {
   if (user && !isPublicRoute && !isIncompleteProfileAllowed) {
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('category_label, country, province, email, phone, gender')
+      .select('user_type, category_label, country, province, email, phone, gender')
       .eq('id', user.id)
       .single()
 
-    // If profile doesn't exist or is incomplete, redirect to complete-profile
-    const isProfileComplete = profile && 
-      !profileError &&
+    // If profile doesn't exist, redirect to complete-profile
+    if (!profile || profileError) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/complete-profile'
+      const redirectResponse = NextResponse.redirect(url)
+      supabaseResponse.cookies.getAll().forEach((cookie) => {
+        redirectResponse.cookies.set(cookie.name, cookie.value)
+      })
+      return redirectResponse
+    }
+
+    // Check profile completeness based on user type
+    const isPlayerProfileComplete = profile.user_type === 'player' &&
       profile.category_label &&
       profile.country &&
       profile.province &&
@@ -85,12 +95,61 @@ export async function updateSession(request: NextRequest) {
       profile.phone &&
       profile.gender
 
+    const isClubProfileComplete = profile.user_type === 'club' &&
+      profile.country &&
+      profile.province &&
+      (profile.email || user.email) &&
+      profile.phone
+
+    const isProfileComplete = isPlayerProfileComplete || isClubProfileComplete
+
     if (!isProfileComplete) {
-      // Profile doesn't exist or is incomplete, redirect to complete-profile
+      // Profile is incomplete, redirect to complete-profile
       const url = request.nextUrl.clone()
       url.pathname = '/complete-profile'
       const redirectResponse = NextResponse.redirect(url)
-      // Copy cookies from supabaseResponse
+      supabaseResponse.cookies.getAll().forEach((cookie) => {
+        redirectResponse.cookies.set(cookie.name, cookie.value)
+      })
+      return redirectResponse
+    }
+
+    // Redirect based on user type (only for root path)
+    const pathname = request.nextUrl.pathname
+    const isClubRoute = pathname.startsWith('/club/')
+    const isPublicClubRoute = pathname.startsWith('/clubs/') || pathname.startsWith('/tournaments/')
+    
+    // Only redirect root path based on user type
+    if (pathname === '/') {
+      if (profile.user_type === 'club') {
+        const url = request.nextUrl.clone()
+        url.pathname = '/club/dashboard'
+        const redirectResponse = NextResponse.redirect(url)
+        supabaseResponse.cookies.getAll().forEach((cookie) => {
+          redirectResponse.cookies.set(cookie.name, cookie.value)
+        })
+        return redirectResponse
+      }
+      // Player stays on root path
+    }
+
+    // Prevent access to wrong user type routes
+    if (profile.user_type === 'club' && !isClubRoute && !isPublicClubRoute && !isIncompleteProfileAllowed && pathname !== '/complete-profile') {
+      // Club user trying to access player routes, redirect to club dashboard
+      const url = request.nextUrl.clone()
+      url.pathname = '/club/dashboard'
+      const redirectResponse = NextResponse.redirect(url)
+      supabaseResponse.cookies.getAll().forEach((cookie) => {
+        redirectResponse.cookies.set(cookie.name, cookie.value)
+      })
+      return redirectResponse
+    }
+
+    if (profile.user_type === 'player' && isClubRoute) {
+      // Player trying to access club routes, redirect to home
+      const url = request.nextUrl.clone()
+      url.pathname = '/'
+      const redirectResponse = NextResponse.redirect(url)
       supabaseResponse.cookies.getAll().forEach((cookie) => {
         redirectResponse.cookies.set(cookie.name, cookie.value)
       })

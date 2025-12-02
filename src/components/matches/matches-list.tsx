@@ -61,7 +61,7 @@ function MatchesListContent() {
           <h2 className="mb-3 text-sm font-medium capitalize text-muted-foreground">
             {month}
           </h2>
-          <div className="space-y-3">
+          <div className="space-y-5">
             {monthMatches.map((match) => {
               if (!currentPlayerId) return null
 
@@ -79,7 +79,7 @@ function MatchesListContent() {
               const eloChange = match.elo_changes?.[eloKey]?.change || 0
 
               return (
-                <Link key={match.id} href={`/matches/${match.id}`}>
+                <Link key={match.id} href={`/matches/${match.id}`} className="block">
                   <Card className="transition-colors hover:bg-muted/50">
                     <CardContent className="p-4">
                       <div className="flex items-start gap-4">

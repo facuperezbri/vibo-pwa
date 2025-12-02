@@ -1066,26 +1066,30 @@ export default function NewMatchPage() {
               <div className="space-y-2">
                 <div className="grid grid-cols-[1fr_repeat(3,_4rem)] items-center gap-2">
                   <div className="flex items-center gap-2">
-                    {currentUser && team1Player2 ? (
+                    {currentUser ? (
                       <div className="flex -space-x-2">
                         <PlayerAvatar
                           name={currentUser.display_name}
                           avatarUrl={currentUser.avatar_url}
                           isGhost={currentUser.is_ghost}
-                          size="md"
+                          size="sm"
                           className={`ring-2 ring-background ${
                             winnerTeam === 1 ? "ring-primary" : ""
                           }`}
                         />
-                        <PlayerAvatar
-                          name={team1Player2.display_name}
-                          avatarUrl={team1Player2.avatar_url}
-                          isGhost={team1Player2.is_ghost}
-                          size="md"
-                          className={`ring-2 ring-background ${
-                            winnerTeam === 1 ? "ring-primary" : ""
-                          }`}
-                        />
+                        {team1Player2 ? (
+                          <PlayerAvatar
+                            name={team1Player2.display_name}
+                            avatarUrl={team1Player2.avatar_url}
+                            isGhost={team1Player2.is_ghost}
+                            size="sm"
+                            className={`ring-2 ring-background ${
+                              winnerTeam === 1 ? "ring-primary" : ""
+                            }`}
+                          />
+                        ) : (
+                          <div className="h-8 w-8 rounded-full ring-2 ring-background bg-muted border-2 border-dashed border-muted-foreground/30" />
+                        )}
                       </div>
                     ) : (
                       <span
@@ -1127,35 +1131,40 @@ export default function NewMatchPage() {
               <div className="space-y-2">
                 <div className="grid grid-cols-[1fr_repeat(3,_4rem)] items-center gap-2">
                   <div className="flex items-center gap-2">
-                    {team2Player1 && team2Player2 ? (
+                    {team2Player1 || team2Player2 ? (
                       <div className="flex -space-x-2">
-                        <PlayerAvatar
-                          name={team2Player1.display_name}
-                          avatarUrl={team2Player1.avatar_url}
-                          isGhost={team2Player1.is_ghost}
-                          size="md"
-                          className={`ring-2 ring-background ${
-                            winnerTeam === 2 ? "ring-primary" : ""
-                          }`}
-                        />
-                        <PlayerAvatar
-                          name={team2Player2.display_name}
-                          avatarUrl={team2Player2.avatar_url}
-                          isGhost={team2Player2.is_ghost}
-                          size="md"
-                          className={`ring-2 ring-background ${
-                            winnerTeam === 2 ? "ring-primary" : ""
-                          }`}
-                        />
+                        {team2Player1 ? (
+                          <PlayerAvatar
+                            name={team2Player1.display_name}
+                            avatarUrl={team2Player1.avatar_url}
+                            isGhost={team2Player1.is_ghost}
+                            size="sm"
+                            className={`ring-2 ring-background ${
+                              winnerTeam === 2 ? "ring-primary" : ""
+                            }`}
+                          />
+                        ) : (
+                          <div className="h-8 w-8 rounded-full ring-2 ring-background bg-muted border-2 border-dashed border-muted-foreground/30" />
+                        )}
+                        {team2Player2 ? (
+                          <PlayerAvatar
+                            name={team2Player2.display_name}
+                            avatarUrl={team2Player2.avatar_url}
+                            isGhost={team2Player2.is_ghost}
+                            size="sm"
+                            className={`ring-2 ring-background ${
+                              winnerTeam === 2 ? "ring-primary" : ""
+                            }`}
+                          />
+                        ) : (
+                          <div className="h-8 w-8 rounded-full ring-2 ring-background bg-muted border-2 border-dashed border-muted-foreground/30" />
+                        )}
                       </div>
                     ) : (
-                      <span
-                        className={`text-sm font-medium ${
-                          winnerTeam === 2 ? "text-primary" : ""
-                        }`}
-                      >
-                        Equipo 2
-                      </span>
+                      <div className="flex -space-x-2">
+                        <div className="h-8 w-8 rounded-full ring-2 ring-background bg-muted border-2 border-dashed border-muted-foreground/30" />
+                        <div className="h-8 w-8 rounded-full ring-2 ring-background bg-muted border-2 border-dashed border-muted-foreground/30" />
+                      </div>
                     )}
                   </div>
                   {sets.map((set, i) => (

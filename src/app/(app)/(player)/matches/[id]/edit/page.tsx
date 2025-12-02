@@ -780,13 +780,42 @@ export default function EditMatchPage({ params }: EditMatchPageProps) {
               {/* Team 1 Row */}
               <div className="space-y-2">
                 <div className="grid grid-cols-[1fr_repeat(3,_4rem)] items-center gap-2">
-                  <span
-                    className={`text-sm font-medium ${
-                      winnerTeam === 1 ? "text-primary" : ""
-                    }`}
-                  >
-                    Equipo 1
-                  </span>
+                  <div className="flex items-center gap-2">
+                    {match ? (
+                      <div className="flex -space-x-2">
+                        <PlayerAvatar
+                          name={match.player_1.display_name}
+                          avatarUrl={
+                            (match.player_1 as Player & { avatar_url?: string | null }).avatar_url
+                          }
+                          isGhost={match.player_1.is_ghost}
+                          size="sm"
+                          className={`ring-2 ring-background ${
+                            winnerTeam === 1 ? "ring-primary" : ""
+                          }`}
+                        />
+                        <PlayerAvatar
+                          name={match.player_2.display_name}
+                          avatarUrl={
+                            (match.player_2 as Player & { avatar_url?: string | null }).avatar_url
+                          }
+                          isGhost={match.player_2.is_ghost}
+                          size="sm"
+                          className={`ring-2 ring-background ${
+                            winnerTeam === 1 ? "ring-primary" : ""
+                          }`}
+                        />
+                      </div>
+                    ) : (
+                      <span
+                        className={`text-sm font-medium ${
+                          winnerTeam === 1 ? "text-primary" : ""
+                        }`}
+                      >
+                        Equipo 1
+                      </span>
+                    )}
+                  </div>
                   {sets.map((set, i) => (
                     <div key={`t1-${i}`} className="flex flex-col">
                       <Input
@@ -816,13 +845,42 @@ export default function EditMatchPage({ params }: EditMatchPageProps) {
               {/* Team 2 Row */}
               <div className="space-y-2">
                 <div className="grid grid-cols-[1fr_repeat(3,_4rem)] items-center gap-2">
-                  <span
-                    className={`text-sm font-medium ${
-                      winnerTeam === 2 ? "text-primary" : ""
-                    }`}
-                  >
-                    Equipo 2
-                  </span>
+                  <div className="flex items-center gap-2">
+                    {match ? (
+                      <div className="flex -space-x-2">
+                        <PlayerAvatar
+                          name={match.player_3.display_name}
+                          avatarUrl={
+                            (match.player_3 as Player & { avatar_url?: string | null }).avatar_url
+                          }
+                          isGhost={match.player_3.is_ghost}
+                          size="sm"
+                          className={`ring-2 ring-background ${
+                            winnerTeam === 2 ? "ring-primary" : ""
+                          }`}
+                        />
+                        <PlayerAvatar
+                          name={match.player_4.display_name}
+                          avatarUrl={
+                            (match.player_4 as Player & { avatar_url?: string | null }).avatar_url
+                          }
+                          isGhost={match.player_4.is_ghost}
+                          size="sm"
+                          className={`ring-2 ring-background ${
+                            winnerTeam === 2 ? "ring-primary" : ""
+                          }`}
+                        />
+                      </div>
+                    ) : (
+                      <span
+                        className={`text-sm font-medium ${
+                          winnerTeam === 2 ? "text-primary" : ""
+                        }`}
+                      >
+                        Equipo 2
+                      </span>
+                    )}
+                  </div>
                   {sets.map((set, i) => (
                     <div key={`t2-${i}`} className="flex flex-col">
                       <Input

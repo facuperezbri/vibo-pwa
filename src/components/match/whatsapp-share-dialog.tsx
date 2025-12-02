@@ -236,7 +236,7 @@ export function WhatsAppShareDialog({
               <ExternalLink className="h-4 w-4" />
               Compartir General
             </Button>
-            <Button className="flex-1 gap-2" onClick={() => onOpenChange(false)}>
+            <Button className="flex-1 gap-2" onClick={handleClose}>
               <Check className="h-4 w-4" />
               Listo
             </Button>

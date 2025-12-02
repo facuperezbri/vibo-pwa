@@ -1,16 +1,16 @@
 "use client";
 
 import { Header } from "@/components/layout/header";
+import type {
+  PlayerPosition,
+  PlayerWithProfiles,
+  SelectedPlayer,
+} from "@/components/match";
 import {
   GhostPlayerDialog,
   PlayerSlot,
   toSelectedPlayer,
   WhatsAppShareDialog,
-} from "@/components/match";
-import type {
-  PlayerPosition,
-  PlayerWithProfiles,
-  SelectedPlayer,
 } from "@/components/match";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";

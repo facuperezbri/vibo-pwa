@@ -1,5 +1,5 @@
-import { Header } from "@/components/layout/header";
 import { ClubDetail } from "@/components/clubs/club-detail";
+import { Header } from "@/components/layout/header";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 
@@ -28,4 +28,3 @@ export default async function ClubPage({ params }: ClubPageProps) {
     </>
   );
 }
-

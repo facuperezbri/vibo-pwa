@@ -246,7 +246,14 @@ export default function EditMatchPage({ params }: EditMatchPageProps) {
         isTiebreak: matchConfig.superTiebreak && setIndex === 2,
       };
       setSets(newSets);
-      validateSet(setIndex, team, 0);
+      
+      // Clear errors when clearing the field
+      const newSetErrors = [...setErrors];
+      if (newSetErrors[setIndex]) {
+        delete newSetErrors[setIndex][team];
+        delete newSetErrors[setIndex][team === "team1" ? "team2" : "team1"];
+      }
+      setSetErrors(newSetErrors);
       return;
     }
 
@@ -274,8 +281,13 @@ export default function EditMatchPage({ params }: EditMatchPageProps) {
     };
     setSets(newSets);
 
-    // Validate this set
-    validateSet(setIndex, team, numValue);
+    // Clear errors for this set while typing (no validation while typing)
+    const newSetErrors = [...setErrors];
+    if (newSetErrors[setIndex]) {
+      delete newSetErrors[setIndex][team];
+      delete newSetErrors[setIndex][team === "team1" ? "team2" : "team1"];
+    }
+    setSetErrors(newSetErrors);
 
     // Auto-add third set if first two sets are won by different teams
     if (newSets.length === 2 && canPlayThirdSet(newSets)) {
@@ -284,26 +296,42 @@ export default function EditMatchPage({ params }: EditMatchPageProps) {
         { team1: 0, team2: 0, isTiebreak: matchConfig.superTiebreak },
       ]);
       setSetInputValues([...newInputValues, { team1: "", team2: "" }]);
-      setSetErrors([...setErrors, {}]);
+      setSetErrors([...newSetErrors, {}]);
     }
   }
 
   function handleSetScoreBlur(setIndex: number, team: "team1" | "team2") {
     // When input loses focus, ensure we have a number (not empty string)
     const currentValue = setInputValues[setIndex]?.[team];
+    let numValue = 0;
+    
     if (currentValue === "" || currentValue === undefined) {
       const newInputValues = [...setInputValues];
       newInputValues[setIndex] = { ...newInputValues[setIndex], [team]: "0" };
       setSetInputValues(newInputValues);
+      numValue = 0;
+    } else {
+      numValue = parseInt(currentValue) || 0;
     }
+
+    // Validate the set when losing focus (without showing errors)
+    const set = sets[setIndex];
+    const updatedSet = {
+      ...set,
+      [team]: numValue,
+    };
+    validateSet(setIndex, team, numValue, updatedSet, false);
   }
 
   function validateSet(
     setIndex: number,
     team: "team1" | "team2",
-    value: number
+    value: number,
+    updatedSet?: SetScore,
+    showErrors: boolean = false
   ) {
-    const set = sets[setIndex];
+    // Use the updated set if provided, otherwise use current state
+    const set = updatedSet || sets[setIndex];
     const isSuperTiebreak = matchConfig.superTiebreak && setIndex === 2;
     const otherTeam = team === "team1" ? "team2" : "team1";
 
@@ -333,12 +361,14 @@ export default function EditMatchPage({ params }: EditMatchPageProps) {
 
       if (!isValidPattern) {
         // Invalid combination like 7-3 or 6-5
-        const setLabel = isSuperTiebreak
-          ? "Super Tiebreak"
-          : `Set ${setIndex + 1}`;
-        const errorMessage = `Resultado inválido en ${setLabel}`;
-        newSetErrors[setIndex][team] = errorMessage;
-        newSetErrors[setIndex][otherTeam] = errorMessage;
+        if (showErrors) {
+          const setLabel = isSuperTiebreak
+            ? "Super Tiebreak"
+            : `Set ${setIndex + 1}`;
+          const errorMessage = `Resultado inválido en ${setLabel}`;
+          newSetErrors[setIndex][team] = errorMessage;
+          newSetErrors[setIndex][otherTeam] = errorMessage;
+        }
       } else {
         // Valid pattern but check if set is complete (has a winner)
         const validation = isValidCompletedSetScore(
@@ -346,7 +376,7 @@ export default function EditMatchPage({ params }: EditMatchPageProps) {
           team2Score,
           isSuperTiebreak
         );
-        if (!validation.valid) {
+        if (!validation.valid && showErrors) {
           // Set doesn't have a winner yet (e.g., 5-0, 4-3, etc.)
           const setLabel = isSuperTiebreak
             ? "Super Tiebreak"
@@ -379,6 +409,39 @@ export default function EditMatchPage({ params }: EditMatchPageProps) {
       setSetInputValues((prev) => prev.slice(0, -1));
       setSetErrors((prev) => prev.slice(0, -1));
     }
+  }
+
+  // Silent validation to check if sets have errors (without showing messages)
+  function hasSetErrors(): boolean {
+    for (let i = 0; i < sets.length; i++) {
+      const set = sets[i];
+      const isSuperTiebreak = matchConfig.superTiebreak && i === 2;
+      const hasAnyScore = set.team1 > 0 || set.team2 > 0;
+
+      if (hasAnyScore) {
+        // Check if it's a valid score pattern
+        const isValidPattern = isValidSetScore(
+          set.team1,
+          set.team2,
+          isSuperTiebreak
+        );
+
+        if (!isValidPattern) {
+          return true; // Invalid combination
+        }
+
+        // Check if set is complete (has a winner)
+        const validation = isValidCompletedSetScore(
+          set.team1,
+          set.team2,
+          isSuperTiebreak
+        );
+        if (!validation.valid) {
+          return true; // Set doesn't have a winner yet
+        }
+      }
+    }
+    return false;
   }
 
   useEffect(() => {
@@ -416,6 +479,12 @@ export default function EditMatchPage({ params }: EditMatchPageProps) {
       setError("Partido no encontrado");
       return;
     }
+
+    // Validate all sets with errors visible
+    sets.forEach((set, index) => {
+      validateSet(index, "team1", set.team1, set, true);
+      validateSet(index, "team2", set.team2, set, true);
+    });
 
     // Validate match using padel rules
     const validation = validateMatch(sets, matchConfig);
@@ -833,7 +902,7 @@ export default function EditMatchPage({ params }: EditMatchPageProps) {
               saving ||
               !winnerTeam ||
               !!validationError ||
-              setErrors.some((err) => Object.keys(err).length > 0)
+              hasSetErrors()
             }
           >
             {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

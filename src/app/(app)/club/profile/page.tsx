@@ -19,7 +19,7 @@ export default async function ClubProfilePage() {
     .from("profiles")
     .select("user_type")
     .eq("id", user.id)
-    .single();
+    .maybeSingle();
 
   if (!profile || profile.user_type !== "club") {
     redirect("/");

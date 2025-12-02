@@ -31,7 +31,7 @@ export function useProfile() {
           .from('profiles')
           .select('id, full_name, username, avatar_url, elo_score, category_label, country, province, phone, email, gender')
           .eq('id', user.id)
-          .single(),
+          .maybeSingle(),
         supabase
           .from('players')
           .select('id')
@@ -47,6 +47,10 @@ export function useProfile() {
       ])
 
       if (profileResult.error) {
+        // Si el error es "no rows found", retornar null en lugar de lanzar error
+        if (profileResult.error.code === 'PGRST116') {
+          return null
+        }
         throw profileResult.error
       }
 

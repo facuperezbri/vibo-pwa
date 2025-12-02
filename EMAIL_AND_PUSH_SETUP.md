@@ -26,6 +26,7 @@ RESEND_FROM_EMAIL=Vibo <noreply@tudominio.com>
 ```
 
 **Nota:** Si usas el dominio de prueba de Resend, el formato será:
+
 ```env
 RESEND_FROM_EMAIL=Vibo <onboarding@resend.dev>
 ```
@@ -47,6 +48,7 @@ npx web-push generate-vapid-keys
 ```
 
 Esto generará algo como:
+
 ```
 Public Key: BEl62iUYgUivxIkv69yViEuiBIa40HI...
 Private Key: V8t5XbKzJz...
@@ -63,6 +65,7 @@ VAPID_SUBJECT=mailto:tucorreo@ejemplo.com
 ```
 
 **Importante:**
+
 - `NEXT_PUBLIC_VAPID_PUBLIC_KEY` debe estar disponible en el cliente (prefijo `NEXT_PUBLIC_`)
 - `VAPID_PRIVATE_KEY` debe mantenerse secreto (solo en servidor)
 - `VAPID_SUBJECT` debe ser un email válido o `mailto:` URL

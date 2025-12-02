@@ -20,6 +20,13 @@ export function useCurrentPlayer() {
         .eq('is_ghost', false)
         .maybeSingle()
 
+      // Debug logging - TODO: Remove after fixing the issue
+      console.log('[useCurrentPlayer] Debug:', {
+        userId: user.id,
+        playerId: playerRecord?.id || null,
+        playerRecord: playerRecord
+      })
+
       return playerRecord?.id || null
     },
     staleTime: 5 * 60 * 1000, // 5 minutes

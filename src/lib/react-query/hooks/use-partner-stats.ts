@@ -16,6 +16,14 @@ export function usePartnerStats(playerId: string | null) {
         target_player_id: playerId,
       });
 
+      // Debug logging - TODO: Remove after fixing the issue
+      console.log('[usePartnerStats] Debug:', {
+        playerId,
+        resultCount: data?.length || 0,
+        data: data || [],
+        error: error?.message || null
+      });
+
       if (error) {
         throw error;
       }

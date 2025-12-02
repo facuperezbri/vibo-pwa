@@ -19,12 +19,20 @@ export function useMostFrequentOpponent(currentPlayerId: string | null) {
       }
 
       // Get all matches where current player participated
-      const { data: matches } = await supabase
+      const { data: matches, error: matchesError } = await supabase
         .from('matches')
         .select('player_1_id, player_2_id, player_3_id, player_4_id')
         .or(`player_1_id.eq.${currentPlayerId},player_2_id.eq.${currentPlayerId},player_3_id.eq.${currentPlayerId},player_4_id.eq.${currentPlayerId}`)
         .order('match_date', { ascending: false })
         .limit(50) // Limit to recent matches for performance
+
+      // Debug logging - TODO: Remove after fixing the issue
+      console.log('[useMostFrequentOpponent] Debug:', {
+        currentPlayerId,
+        matchesFound: matches?.length || 0,
+        matches: matches || [],
+        error: matchesError?.message || null
+      });
 
       if (!matches || matches.length === 0) {
         return null

@@ -789,6 +789,9 @@ export default function NewMatchPage() {
       queryClient.invalidateQueries({ queryKey: ["user-stats"] }),
       queryClient.invalidateQueries({ queryKey: ["player-matches"] }),
       queryClient.invalidateQueries({ queryKey: ["ranking"] }),
+      queryClient.invalidateQueries({ queryKey: ["partner-stats"] }),
+      queryClient.invalidateQueries({ queryKey: ["most-frequent-opponent"] }),
+      queryClient.invalidateQueries({ queryKey: ["head-to-head-stats"] }),
     ]);
 
     // Show share dialog if there are players to share with
@@ -1296,6 +1299,9 @@ export default function NewMatchPage() {
                     queryKey: ["player-matches"],
                   }),
                   queryClient.invalidateQueries({ queryKey: ["ranking"] }),
+                  queryClient.invalidateQueries({ queryKey: ["partner-stats"] }),
+                  queryClient.invalidateQueries({ queryKey: ["most-frequent-opponent"] }),
+                  queryClient.invalidateQueries({ queryKey: ["head-to-head-stats"] }),
                 ]);
                 resetForm();
               }, 200); // Small delay to allow dialog close animation

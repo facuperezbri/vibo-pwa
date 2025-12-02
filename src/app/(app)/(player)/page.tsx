@@ -6,6 +6,7 @@ import { ProfileSummary } from "@/components/home/profile-summary";
 import { RecentMatches } from "@/components/home/recent-matches";
 import { StatsGrid } from "@/components/home/stats-grid";
 import { Header } from "@/components/layout/header";
+import { PartnerChemistryDebug } from "@/components/debug/partner-chemistry-debug";
 import { useProfile } from "@/lib/react-query/hooks";
 import { isPlayerProfileComplete } from "@/lib/profile-utils";
 import { Swords } from "lucide-react";
@@ -36,6 +37,7 @@ export default function HomePage() {
       <div className="space-y-6 p-4">
         <ProfileSummary />
         <StatsGrid />
+        <PartnerChemistryDebug />
         <PartnerChemistry />
         <HeadToHeadRivalry />
         <RecentMatches />
